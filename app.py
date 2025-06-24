@@ -1,0 +1,260 @@
+# app.py - VERSIÓN CON LÓGICA FREEMIUM Y REGISTRO POR EMAIL
+
+import datetime as dt
+import requests
+from flask import Flask, jsonify, request
+from flask_bcrypt import Bcrypt
+from flask_cors import CORS
+import google.generativeai as genai
+from flask_jwt_extended import (
+    create_access_token, get_jwt_identity, jwt_required, JWTManager, get_jwt
+)
+from flask_sqlalchemy import SQLAlchemy
+from cargar_API import cargar_claves_api
+
+# --- 1. Configuración Centralizada ---
+app = Flask(__name__)
+app.config["JWT_SECRET_KEY"] = "tu-clave-secreta-super-dificil-de-adivinar"
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:batuani@localhost/guardian_clima_db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# --- 2. Inicialización de Extensiones ---
+db = SQLAlchemy(app)
+jwt = JWTManager(app)
+bcrypt = Bcrypt(app)
+CORS(app)
+
+# --- 3. Definición de Modelos (con email y plan) ---
+class Users(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(80), unique=True, nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    password = db.Column(db.String(255), nullable=False)
+    plan = db.Column(db.String(50), nullable=False, default='free')
+
+    # --- NUEVOS CAMPOS DE PERSONALIZACIÓN ---
+    estilo_preferido = db.Column(db.String(50), default='Casual')
+    actividad_principal = db.Column(db.String(50), default='Oficina')
+    sensibilidad_frio = db.Column(db.String(50), default='Normal')
+    preferencias_guardadas = db.Column(db.Boolean, default=False)
+    # --- FIN DE NUEVOS CAMPOS ---
+
+    def set_password(self, password):
+        self.password = bcrypt.generate_password_hash(password).decode('utf-8')
+
+    def check_password(self, password):
+        return bcrypt.check_password_hash(self.password, password)
+
+class Queries(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    ciudad = db.Column(db.String(100), nullable=False)
+    temperatura = db.Column(db.Float, nullable=False)
+    descripcion = db.Column(db.String(100))
+    timestamp = db.Column(db.DateTime, default=dt.datetime.utcnow)
+    user = db.relationship('Users', backref=db.backref('queries', lazy=True))
+
+# --- 4. Creación de Tablas ---
+with app.app_context():
+    db.create_all()
+
+# --- 5. Carga de API Keys Externas ---
+MIowmAPI = cargar_claves_api(True)
+geminiAPI = cargar_claves_api(False)
+if geminiAPI:
+    genai.configure(api_key=geminiAPI)
+
+# --- 6. Funciones de Ayuda ---
+def obtener_datos_clima_api(ciudad):
+    base_url = "https://api.openweathermap.org/data/2.5/weather"
+    parametros = {'q': ciudad, 'appid': MIowmAPI, 'units': 'metric', 'lang': 'es'}
+    try:
+        respuesta = requests.get(base_url, params=parametros, timeout=10)
+        respuesta.raise_for_status()
+        return respuesta.json(), 200
+    except requests.exceptions.RequestException:
+        return None, 500
+
+# --- 7. Endpoints de la Aplicación ---
+@app.route('/api/register', methods=['POST'])
+def register():
+    data = request.get_json()
+    username, email, password = data.get('username'), data.get('email'), data.get('password')
+    if not username or not email or not password:
+        return jsonify({"error": "Nombre de usuario, email y contraseña requeridos"}), 400
+    if Users.query.filter_by(email=email).first():
+        return jsonify({"error": "El correo electrónico ya está en uso"}), 409
+    if Users.query.filter_by(username=username).first():
+        return jsonify({"error": "El nombre de usuario ya está en uso"}), 409
+    
+    new_user = Users(username=username, email=email)
+    new_user.set_password(password) # El plan es 'free' por defecto
+    db.session.add(new_user)
+    db.session.commit()
+    return jsonify({"mensaje": f"Usuario {username} creado con éxito"}), 201
+
+@app.route('/api/login', methods=['POST'])
+def login():
+    data = request.get_json()
+    email, password = data.get('email'), data.get('password')
+    user = Users.query.filter_by(email=email).first()
+    if user and user.check_password(password):
+        # AÑADIMOS 'preferencias_guardadas' a los claims del token
+        additional_claims = {
+            "plan": user.plan, 
+            "username": user.username,
+            "prefs_saved": user.preferencias_guardadas # <-- ¡NUEVO!
+        }
+        access_token = create_access_token(identity=str(user.id), additional_claims=additional_claims)
+        return jsonify(access_token=access_token)
+    return jsonify({"error": "Credenciales inválidas"}), 401
+
+@app.route('/api/user/preferences', methods=['POST'])
+@jwt_required()
+def save_preferences():
+    current_user_id = get_jwt_identity()
+    user = Users.query.get(current_user_id)
+    if not user:
+        return jsonify({"error": "Usuario no encontrado"}), 404
+
+    data = request.get_json()
+    user.estilo_preferido = data.get('estilo', user.estilo_preferido)
+    user.actividad_principal = data.get('actividad', user.actividad_principal)
+    user.sensibilidad_frio = data.get('sensibilidad', user.sensibilidad_frio)
+    user.preferencias_guardadas = True
+    db.session.commit()
+    
+    # --- ¡LA SOLUCIÓN! ---
+    # 1. Creamos las propiedades para el nuevo token, ahora con 'prefs_saved' en True.
+    additional_claims = {
+        "plan": user.plan, 
+        "username": user.username,
+        "prefs_saved": user.preferencias_guardadas # Esto ahora será True
+    }
+    # 2. Generamos un nuevo token actualizado.
+    new_token = create_access_token(identity=str(user.id), additional_claims=additional_claims)
+    
+    # 3. Lo devolvemos en la respuesta.
+    return jsonify({
+        "mensaje": "Preferencias guardadas con éxito",
+        "access_token": new_token # <-- ¡NUEVO!
+    }), 200
+
+@app.route('/api/v1/weather/<string:ciudad>', methods=['GET'])
+@jwt_required()
+def get_weather(ciudad):
+    datos_clima, status_code = obtener_datos_clima_api(ciudad)
+    if not datos_clima:
+        return jsonify({"error": f"No se pudo obtener el clima. Código: {status_code}"}), status_code
+    
+    try:
+        current_user_id = get_jwt_identity()
+        nueva_consulta = Queries(
+            user_id=current_user_id,
+            ciudad=datos_clima['name'],
+            temperatura=datos_clima['main']['temp'],
+            descripcion=datos_clima['weather'][0]['description']
+        )
+        db.session.add(nueva_consulta)
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error al guardar en la base de datos: {e}")
+    
+    return jsonify(datos_clima)
+
+@app.route('/api/v1/history', methods=['GET'])
+@jwt_required()
+def get_history():
+    current_user_id = get_jwt_identity()
+    claims = get_jwt()
+    user_plan = claims.get("plan", "free") # Obtenemos el plan del token
+
+    query = Queries.query.filter_by(user_id=current_user_id).order_by(Queries.timestamp.desc())
+
+    # Aplicamos la lógica Freemium
+    if user_plan == 'free':
+        query = query.limit(5)
+    
+    consultas = query.all()
+    historial_json = [{"ciudad": c.ciudad, "temperatura": c.temperatura, "descripcion": c.descripcion, "fecha": c.timestamp.strftime("%Y-%m-%d %H:%M:%S")} for c in consultas]
+    return jsonify(historial_json)
+
+@app.route('/api/v1/ai-advice/<string:ciudad>', methods=['GET'])
+@jwt_required()
+def get_ai_advice(ciudad):
+    # 1. Obtenemos la identidad del usuario y sus datos de la BD
+    current_user_id = get_jwt_identity()
+    user = Users.query.get(current_user_id)
+    if not user:
+        return jsonify({"error": "Usuario no encontrado para generar consejo."}), 404
+
+    # 2. Obtenemos los datos del clima (sin cambios aquí)
+    datos_clima, status_code = obtener_datos_clima_api(ciudad)
+    if not datos_clima: return jsonify({"error": f"No se pudo obtener el clima para la IA. Código: {status_code}"}), status_code
+    if not geminiAPI: return jsonify({"consejo": "La función de IA no está configurada."})
+
+    try:
+        # 3. Construimos el MEGA-PROMPT
+        descripcion = datos_clima['weather'][0]['description']
+        temperatura = datos_clima['main']['temp']
+        sensacion_termica = datos_clima['main']['feels_like']
+        humedad = datos_clima['main']['humidity']
+
+        # Usamos los datos del usuario para enriquecer el prompt
+        prompt = (
+            f"Actúa como un asistente de moda y estilo de vida personal. "
+            f"El usuario tiene las siguientes preferencias: "
+            f"Estilo: '{user.estilo_preferido}', "
+            f"Actividad principal del día: '{user.actividad_principal}', "
+            f"Sensibilidad al frío: '{user.sensibilidad_frio}'.\n"
+            f"El clima actual es: Condición: {descripcion}, Temperatura: {temperatura}°C, "
+            f"Sensación térmica: {sensacion_termica}°C, Humedad: {humedad}%.\n"
+            f"Basado en TODA esta información (preferencias del usuario Y el clima), "
+            f"genera una recomendación de vestimenta breve, práctica y con estilo en un solo párrafo. "
+            f"Dirígete al usuario de forma amigable y directa. Por ejemplo, si su sensibilidad al frío es alta, sugiérele una capa extra. "
+            f"Si su estilo es elegante, recomienda prendas más formales. Responde únicamente con la recomendación."
+        )
+
+        # 4. Generamos y devolvemos la respuesta (sin cambios aquí)
+        model = genai.GenerativeModel('gemini-2.0-flash') # Usamos un modelo potente
+        response = model.generate_content(prompt)
+        return jsonify({"consejo": response.text})
+    except Exception as e:
+        print(f"Error al contactar la API de Gemini: {e}")
+        return jsonify({"error": "No se pudo generar el consejo de la IA."}), 500
+
+@app.route('/api/user/upgrade', methods=['POST'])
+@jwt_required()
+def upgrade_plan():
+    current_user_id = get_jwt_identity()
+    user = Users.query.get(current_user_id)
+    if not user:
+        return jsonify({"error": "Usuario no encontrado"}), 404
+
+    data = request.get_json()
+    new_plan = data.get('plan') # Ej: 'premium' o 'pro'
+
+    if new_plan not in ['premium', 'pro']:
+        return jsonify({"error": "Plan no válido"}), 400
+
+    user.plan = new_plan
+    db.session.commit()
+
+    # ¡Paso clave! Creamos y devolvemos un NUEVO token con el plan actualizado.
+    additional_claims = {
+        "plan": user.plan, 
+        "username": user.username,
+        "prefs_saved": user.preferencias_guardadas
+    }
+    new_token = create_access_token(identity=str(user.id), additional_claims=additional_claims)
+    
+    # Creamos UN SOLO diccionario con ambas claves: "mensaje" y "access_token".
+    return jsonify({
+        "mensaje": f"¡Felicidades! Has actualizado al plan {user.plan.title()}",
+        "access_token": new_token
+    }), 200
+
+# --- 8. Ejecución de la Aplicación ---
+if __name__ == '__main__':
+    app.run(port=5000, debug=True)
