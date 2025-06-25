@@ -4,13 +4,16 @@ import requests
 from flask import Flask, jsonify, request
 from flask_bcrypt import Bcrypt
 from flask_cors import CORS
-import google.generativeai as genai
 from flask_jwt_extended import (
-    create_access_token, get_jwt_identity, jwt_required, JWTManager, get_jwt
+    create_access_token, get_jwt_identity, jwt_required, JWTManager, get_jwt,
+    # Importa 'verify_jwt_in_request' y 'current_user' si los usas para validaciones manuales
 )
 from flask_sqlalchemy import SQLAlchemy
 from cargar_API import cargar_claves_api
-
+from PIL import Image
+from google import genai
+from google.genai import types
+import os
 # --- 1. Configuración Centralizada ---
 app = Flask(__name__)
 app.config["JWT_SECRET_KEY"] = "tu-clave-secreta-super-dificil-de-adivinar"
@@ -21,8 +24,11 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 jwt = JWTManager(app)
 bcrypt = Bcrypt(app)
-CORS(app)
-
+CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}}) # 
+@app.before_request
+def before_request():
+    if request.method == 'OPTIONS':
+        return jsonify(message="Preflight"), 200 # 
 # --- 3. Definición de Modelos (con email y plan) ---
 class Users(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -61,7 +67,7 @@ with app.app_context():
 MIowmAPI = cargar_claves_api(True)
 geminiAPI = cargar_claves_api(False)
 if geminiAPI:
-    genai.configure(api_key=geminiAPI)
+    gemini_client = genai.Client(api_key=geminiAPI)
 
 # --- 6. Funciones de Ayuda ---
 def obtener_datos_clima_api(ciudad):
@@ -179,6 +185,80 @@ def get_history():
     historial_json = [{"ciudad": c.ciudad, "temperatura": c.temperatura, "descripcion": c.descripcion, "fecha": c.timestamp.strftime("%Y-%m-%d %H:%M:%S")} for c in consultas]
     return jsonify(historial_json)
 
+@app.route('/api/v1/ai-outfit/', methods=['POST'])
+@jwt_required()
+def get_ai_outfit():
+    current_user_id = get_jwt_identity()
+    user = Users.query.get(current_user_id)
+    if not user:
+        return jsonify({"error": "Usuario no encontrado."}), 404
+
+    # Verificar el plan del usuario
+    if user.plan not in ['premium', 'pro']:
+        return jsonify({"error": "Esta función requiere un plan Premium o Pro."}), 403 # 403 Forbidden
+
+    # Obtener la ciudad del formulario o JSON, no de la URL
+    ciudad = request.form.get('ciudad') # Asumimos que la ciudad vendrá como parte del formulario
+    if not ciudad:
+        return jsonify({"error": "Ciudad requerida para el consejo de vestimenta."}), 400
+
+    # Obtener los archivos de imagen
+    if 'imagenes' not in request.files:
+        return jsonify({"error": "No se encontraron archivos de imagen."}), 400
+    
+    archivos_imagenes = request.files.getlist('imagenes')
+    if not archivos_imagenes:
+        return jsonify({"error": "No se seleccionaron imágenes."}), 400
+
+    imagenes_pil = []
+    for archivo in archivos_imagenes:
+        if archivo.filename == '':
+            return jsonify({"error": "Nombre de archivo no válido."}), 400
+        if archivo:
+            try:
+                # Abrir la imagen directamente del stream para evitar guardar en disco innecesariamente
+                imagen = Image.open(archivo.stream)
+                imagenes_pil.append(imagen)
+            except Exception as e:
+                return jsonify({"error": f"Error al procesar imagen: {e}"}), 400
+            
+    # 2. Obtenemos los datos del clima (sin cambios aquí)
+    datos_clima, status_code = obtener_datos_clima_api(ciudad)
+    if not datos_clima: return jsonify({"error": f"No se pudo obtener el clima para la IA. Código: {status_code}"}), status_code
+    if not geminiAPI: return jsonify({"consejo": "La función de IA no está configurada."})
+
+    try:
+        descripcion = datos_clima['weather'][0]['description']
+        temperatura = datos_clima['main']['temp']
+        sensacion_termica = datos_clima['main']['feels_like']
+        humedad = datos_clima['main']['humidity']
+
+        prompt = (
+        f"""Dame un outfit completo con la ropa que aparece en las fotos basando tu eleccion en el clima actual en {ciudad}.
+        Teniendo en cuenta los siguientes datos:
+        temperatura: {temperatura}, humedad:{humedad}, sensacion termica:{sensacion_termica} y la descripcion del clima: {descripcion})
+        es un requisito que las prendas elegidas tienen que combinar.
+        Cuando elijas el outfit en base a TODAS las prendas de las imagenes necesito que respondas dando una referencia clara sobre que prendas elegiste
+        para que el usuario las pueda identificar facilmente.
+
+        Aclaracion: no uses letra negrita
+        """
+        )
+
+        response = gemini_client.models.generate_content(
+            model='gemini-2.0-flash',
+            config=types.GenerateContentConfig(
+                system_instruction="Sos un asistente de estilo y moda. Analiza las prendas de las imágenes para tus recomendaciones.",
+                max_output_tokens=1000
+            ),
+            contents=imagenes_pil + [prompt] # Enviamos las imágenes y luego el prompt
+        )
+        print(response.text)
+        return jsonify({"consejo": response.text})
+    except Exception as e:
+        print(f"Error al contactar la API de Gemini o procesar: {e}")
+        return jsonify({"error": "No se pudo generar el consejo de IA de vestimenta."}), 500
+
 @app.route('/api/v1/ai-advice/<string:ciudad>', methods=['GET'])
 @jwt_required()
 def get_ai_advice(ciudad):
@@ -216,8 +296,13 @@ def get_ai_advice(ciudad):
         )
 
         # 4. Generamos y devolvemos la respuesta (sin cambios aquí)
-        model = genai.GenerativeModel('gemini-2.0-flash') # Usamos un modelo potente
-        response = model.generate_content(prompt)
+        response = gemini_client.models.generate_content(
+            model="gemini-2.0-flash",
+            config = types.GenerateContentConfig(
+                max_output_tokens=600
+            ),
+            contents=prompt           
+        )
         return jsonify({"consejo": response.text})
     except Exception as e:
         print(f"Error al contactar la API de Gemini: {e}")
