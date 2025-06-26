@@ -27,11 +27,12 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 jwt = JWTManager(app)
 bcrypt = Bcrypt(app)
-CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}}) # 
-@app.before_request
-def before_request():
-    if request.method == 'OPTIONS':
-        return jsonify(message="Preflight"), 200 # 
+CORS(app, 
+     resources={r"/*": {"origins": "http://localhost:3000"}}, 
+     supports_credentials=True,
+     allow_headers=["Authorization", "Content-Type"] 
+)
+
 # --- 3. Definición de Modelos (con email y plan) ---
 class Users(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -154,6 +155,7 @@ def save_preferences():
 @jwt_required()
 def get_weather(ciudad):
     datos_clima, status_code = obtener_datos_clima_api(ciudad)
+        
     if not datos_clima:
         return jsonify({"error": f"No se pudo obtener el clima. Código: {status_code}"}), status_code
     
@@ -190,7 +192,7 @@ def get_history():
     historial_json = [{"ciudad": c.ciudad, "temperatura": c.temperatura, "descripcion": c.descripcion, "fecha": c.timestamp.strftime("%Y-%m-%d %H:%M:%S")} for c in consultas]
     return jsonify(historial_json)
 
-@app.route('/api/v1/ai-outfit/', methods=['POST'])
+@app.route('/api/v1/ai-outfit', methods=['POST'])
 @jwt_required()
 def get_ai_outfit():
     current_user_id = get_jwt_identity()
@@ -239,26 +241,40 @@ def get_ai_outfit():
         humedad = datos_clima['main']['humidity']
 
         prompt = (
-        f"""Dame un outfit completo con la ropa que aparece en las fotos basando tu eleccion en el clima actual en {ciudad}.
-        Teniendo en cuenta los siguientes datos:
-        temperatura: {temperatura}, humedad:{humedad}, sensacion termica:{sensacion_termica} y la descripcion del clima: {descripcion})
-        es un requisito que las prendas elegidas tienen que combinar.
-        Cuando elijas el outfit en base a TODAS las prendas de las imagenes necesito que respondas dando una referencia clara sobre que prendas elegiste
-        para que el usuario las pueda identificar facilmente.
+        f"""
+            Analiza cada imagen profundamente para detectar las distintas prendas de las fotos
+            Luego, basándote en las prendas que se te muestran en las imágenes,
+            el clima actual, temperatura, sensasion termica, humedad, descripcion del clima y las preferencias del usuario, 
+            genera una recomendación de vestimenta completa y coherente para el día.
+            
+            Preferencias del usuario:
+            Estilo preferido: {user.estilo_preferido}
+            Actividad principal del día: {user.actividad_principal}
+            Sensibilidad al frío: {user.sensibilidad_frio}
 
-        Aclaracion: no uses letra negrita
+            Clima actual en {ciudad}:
+            Temperatura: {temperatura}°C
+            Sensación térmica: {sensacion_termica}°C
+            Humedad: {humedad}%
+            Descripción del clima: {descripcion}
+
+            Selecciona y describe claramente cada prenda para que el usuario pueda identificarlas claramente.
+            IMPORTANTE: Si hay prendas muy similares, hace un enfasis en la descripcion de la prenda que elegiste asi el usuario puede diferenciarla
+            y explica brevemente por qué la elegiste, relacionándola con el clima, la actividad o el estilo del usuario.
+            Asegurate de que todas las prendas elegidas combinen entre sí para formar un conjunto armonioso. 
+            
+            NO USES LETRAS NEGRITAS EN LAS RESPUESTAS, NO USES ASTERISCOS, NO USES HTML TAGS
         """
         )
 
         response = gemini_client.models.generate_content(
-            model='gemini-2.0-flash',
+            model='gemini-2.5-flash-lite-preview-06-17',
             config=types.GenerateContentConfig(
                 system_instruction="Sos un asistente de estilo y moda profesional. Analiza las prendas de las imágenes para tus recomendaciones.",
                 max_output_tokens=1000
             ),
-            contents=imagenes_pil + [prompt] # Enviamos las imágenes y luego el prompt
+            contents=[imagenes_pil, prompt] # Enviamos las imágenes y luego el prompt
         )
-        print(response.text)
         return jsonify({"consejo": response.text})
     except Exception as e:
         print(f"Error al contactar la API de Gemini o procesar: {e}")
