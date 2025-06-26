@@ -83,7 +83,6 @@ def obtener_datos_clima_api(ciudad):
         respuesta.raise_for_status()
         return respuesta.json(), 200
     except requests.exceptions.RequestException as e:
-        print(f"!!! ERROR REAL DE LA API: {e} !!!")
         return None, 500
 
 # --- 7. Endpoints de la Aplicación ---
