@@ -48,4 +48,13 @@ export const styles = {
     freemiumMessage: { backgroundColor: '#eef2ff', color: '#4338ca', padding: '1rem', borderRadius: '0.75rem', marginBottom: '1rem', textAlign: 'center', fontSize: '0.875rem' },
     upgradeButton: { display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'linear-gradient(to right, #f59e0b, #ef4444)', color: 'white', border: 'none', borderRadius: '0.75rem', padding: '0.5rem 1rem', fontWeight: '600', cursor: 'pointer', transition: 'transform 0.2s ease-in-out', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)'},
     aiAdviceText: {margin: 0,color: '#4b5563',lineHeight: '1.6',whiteSpace: 'pre-wrap',},
+    premiumCardTitle: {
+        marginTop: 0,
+        fontWeight: 700,
+        paddingBottom: '0.5rem',
+        color: '#4f46e5', // Un color morado que ya usas en la app
+        textAlign: 'center'
+    },
+    historyCard: { maxHeight: 'calc(100vh - 12rem)', overflowY: 'auto' },
+
 };  

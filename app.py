@@ -271,7 +271,7 @@ def get_ai_outfit():
             model='gemini-2.5-flash-lite-preview-06-17',
             config=types.GenerateContentConfig(
                 system_instruction="Sos un asistente de estilo y moda profesional. Analiza las prendas de las imágenes para tus recomendaciones.",
-                max_output_tokens=1000
+                max_output_tokens=600
             ),
             contents=[imagenes_pil, prompt] # Enviamos las imágenes y luego el prompt
         )

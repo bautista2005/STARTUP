@@ -115,7 +115,7 @@ function MainView(props) {
                     {/* --- NUEVA SECCIÓN: CONSEJO DE VESTIMENTA CON IMÁGENES (PREMIUM/PRO) --- */}
                     {isPremiumOrPro ? (
                         <div className="fade-in" style={{...styles.card, marginTop: '2rem'}}>
-                            <h3 style={styles.cardTitle}>Consejo de Vestimenta con IA (Premium/Pro)</h3>
+                            <h3 style={styles.premiumCardTitle}>Consejo de Vestimenta con IA (Premium/Pro)</h3>
                             <p style={{color: '#6b7280', fontSize: '0.9rem', marginBottom: '1rem'}}>
                                 Sube fotos de tu ropa para obtener recomendaciones personalizadas basadas en el clima actual en {clima?.name || "la ciudad buscada"}.
                             </p>
