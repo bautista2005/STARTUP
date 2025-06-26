@@ -1,0 +1,16 @@
+# .gitignore (en la raíz de tu backend, junto a app.py)
+
+# Environment variables
+.env
+
+# Python specific ignores (optional, but recommended)
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.ipynb_checkpoints
+.pytest_cache
+*.egg-info/

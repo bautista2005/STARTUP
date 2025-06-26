@@ -9,15 +9,18 @@ from flask_jwt_extended import (
     # Importa 'verify_jwt_in_request' y 'current_user' si los usas para validaciones manuales
 )
 from flask_sqlalchemy import SQLAlchemy
-from cargar_API import cargar_claves_api
 from PIL import Image
 from google import genai
 from google.genai import types
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
 # --- 1. Configuración Centralizada ---
 app = Flask(__name__)
-app.config["JWT_SECRET_KEY"] = "tu-clave-secreta-super-dificil-de-adivinar"
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:batuani@localhost/guardian_clima_db'
+app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY")
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("DATABASE_URL")
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # --- 2. Inicialización de Extensiones ---
@@ -64,8 +67,10 @@ with app.app_context():
     db.create_all()
 
 # --- 5. Carga de API Keys Externas ---
-MIowmAPI = cargar_claves_api(True)
-geminiAPI = cargar_claves_api(False)
+MIowmAPI = os.getenv("WEATHER_API_KEY")
+geminiAPI = os.getenv("GEMINI_API_KEY")
+
+
 if geminiAPI:
     gemini_client = genai.Client(api_key=geminiAPI)
 
@@ -77,7 +82,8 @@ def obtener_datos_clima_api(ciudad):
         respuesta = requests.get(base_url, params=parametros, timeout=10)
         respuesta.raise_for_status()
         return respuesta.json(), 200
-    except requests.exceptions.RequestException:
+    except requests.exceptions.RequestException as e:
+        print(f"!!! ERROR REAL DE LA API: {e} !!!")
         return None, 500
 
 # --- 7. Endpoints de la Aplicación ---
@@ -248,7 +254,7 @@ def get_ai_outfit():
         response = gemini_client.models.generate_content(
             model='gemini-2.0-flash',
             config=types.GenerateContentConfig(
-                system_instruction="Sos un asistente de estilo y moda. Analiza las prendas de las imágenes para tus recomendaciones.",
+                system_instruction="Sos un asistente de estilo y moda profesional. Analiza las prendas de las imágenes para tus recomendaciones.",
                 max_output_tokens=1000
             ),
             contents=imagenes_pil + [prompt] # Enviamos las imágenes y luego el prompt
