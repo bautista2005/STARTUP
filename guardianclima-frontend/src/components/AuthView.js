@@ -43,7 +43,7 @@ function AuthView({ handleAuth, isLoading, error, username, setUsername, email, 
 
       {error && <p style={styles.error}>{error}</p>}
       
-      <button onClick={() => handleAuth(isRegister ? 'register' : 'login')} disabled={isLoading} className="btn btn-primary" style={{width: '100%', marginTop: '1.5rem'}}>
+      <button onClick={() => handleAuth(isRegister ? 'register' : 'login')} disabled={isLoading} style={styles.primaryButton}>
           {isLoading ? (isRegister ? 'Registrando...' : 'Cargando...') : (isRegister ? 'Crear Cuenta' : 'Iniciar Sesión')}
       </button>
 

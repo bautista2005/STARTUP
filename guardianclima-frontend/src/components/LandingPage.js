@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { styles } from '../styles/professionalStyles'; // Importa los estilos
 import PlanCard from './PlanCard'; // Importa el componente de tarjeta de plan
 import { WandIcon, RobotIcon, LogoIcon } from './icons'; // Importa los iconos existentes
@@ -14,6 +14,45 @@ const CloudSunIcon = () => (
     </svg>
 );
 
+function NavLink({ href, children, onClick }) {
+    const [hover, setHover] = useState(false);
+
+    const linkStyle = {
+        color: hover ? '#3B82F6' : '#4B5568',
+        textDecoration: 'none',
+        fontWeight: '600',
+        fontSize: '1rem',
+        padding: '0.5rem 0',
+        position: 'relative',
+        transition: 'color 0.3s',
+    };
+
+    const underlineStyle = {
+        position: 'absolute',
+        width: '100%',
+        height: '2px',
+        bottom: '-2px',
+        left: '0',
+        backgroundColor: '#3B82F6',
+        transform: hover ? 'scaleX(1)' : 'scaleX(0)',
+        transformOrigin: 'bottom left',
+        transition: 'transform 0.3s ease-out',
+    };
+
+    return (
+        <a 
+            href={href}
+            style={linkStyle}
+            onClick={onClick}
+            onMouseEnter={() => setHover(true)}
+            onMouseLeave={() => setHover(false)}
+        >
+            {children}
+            <span style={underlineStyle}></span>
+        </a>
+    );
+}
+
 function LandingPage({ onNavigateToAuth, setView, handleUpgrade, currentUserPlan }) {
     const plans = [
         { id: 'free', name: 'Plan Gratuito', price: '$0', cta: 'Comenzar' },
@@ -23,8 +62,8 @@ function LandingPage({ onNavigateToAuth, setView, handleUpgrade, currentUserPlan
 
     const landingPageStyles = {
         navbar: {
-            background: '#FFFFFF',
-            boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+            backgroundColor: '#FFFFFF',
+            borderBottom: '1px solid #E5E7EB',
             position: 'fixed',
             width: '100%',
             top: 0,
@@ -39,52 +78,40 @@ function LandingPage({ onNavigateToAuth, setView, handleUpgrade, currentUserPlan
         navbarContent: {
             maxWidth: '1200px',
             width: '100%',
-            padding: '1rem 2rem',
+            padding: '1.5rem 2rem',
             display: 'flex',
-            justifyContent: 'space-around',
+            justifyContent: 'space-between',
             alignItems: 'center',
-            gap: '2rem', // Increased gap between main elements
         },
         navLinksWrapper: {
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
+            gap: '3rem',
         },
         navTitle: {
             ...styles.header,
             fontSize: '1.5rem',
-            color: styles.header.color, // Azul de la marca
+            color: '#1F2937',
         },
         navLinks: {
             listStyle: 'none',
             padding: 0,
             margin: 0,
             display: 'flex',
-            gap: '2rem', // Increased gap between nav links
-        },
-        navLink: {
-            color: '#4A5568', // Darker grey for better contrast
-            textDecoration: 'none',
-            fontWeight: '600',
-            fontSize: '1rem', // Slightly larger font size
-            padding: '0.5rem 0.75rem', // Add padding for better click area
-            transition: 'all 0.3s ease-in-out',
-            '&:hover': {
-                color: styles.header.color, // Blue on hover
-                transform: 'translateY(-2px)',
-            },
+            gap: '3rem',
         },
         hero: {
-            backgroundColor: styles.appWrapper.backgroundColor, // Fondo gris claro
-            color: styles.header.color, // Azul de la marca
+            backgroundColor: '#F9FAFB',
+            color: '#1F2937',
             textAlign: 'center',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
             width: '100%',
-            minHeight: '100vh', // Full viewport height
-            paddingTop: '80px', // Push content below navbar
+            minHeight: '90vh',
+            padding: '6rem 2rem',
         },
         heroContent: {
             padding: '0 2rem', // Only horizontal padding
@@ -93,39 +120,44 @@ function LandingPage({ onNavigateToAuth, setView, handleUpgrade, currentUserPlan
             textAlign: 'center',
         },
         heroAppName: {
-            fontSize: '2.5rem',
-            fontWeight: '700',
-            color: styles.header.color,
+            fontSize: '3rem',
+            fontWeight: '800',
+            color: '#1F2937',
             marginBottom: '1rem',
-            letterSpacing: '-0.02em',
+            letterSpacing: '-0.025em',
         },
         heroTagline: {
-            fontSize: '2rem', // Adjusted from 3.5rem to be smaller than heroAppName
-            fontWeight: '900',
-            marginBottom: '1.5rem',
-            lineHeight: '1.1',
-            color: '#1A202C',
-            textShadow: '3px 3px 6px rgba(0,0,0,0.15)',
-            letterSpacing: '-0.05em',
-            margin: '0 auto 1.5rem auto',
+            fontSize: '1.5rem',
+            fontWeight: '500',
+            marginBottom: '2rem',
+            lineHeight: '1.4',
+            color: '#4B5568',
+            maxWidth: '600px',
+            margin: '0 auto 2rem auto',
         },
         heroSubtitle: {
-            fontSize: '1.6rem', // Slightly larger subtitle
-            color: '#4A5568', // Darker grey for better readability
-            marginBottom: '3rem',
-            lineHeight: '1.5',
-            margin: '0 auto 3rem auto',
+            fontSize: '1.125rem',
+            color: '#6B7280',
+            marginBottom: '2.5rem',
+            lineHeight: '1.6',
+            maxWidth: '600px',
+            margin: '0 auto 2.5rem auto',
         },
         ctaButton: {
-            ...styles.upgradeButton,
-            padding: '1.2rem 3rem', // Larger button padding
-            fontSize: '1.25rem', // Larger button font size
-            borderRadius: '0.75rem', // Slightly more rounded corners
-            boxShadow: '0 6px 12px rgba(0,0,0,0.2)', // More prominent shadow
-            transition: 'all 0.3s ease-in-out', // Ensure smooth transition
+            backgroundColor: '#3B82F6',
+            color: '#FFFFFF',
+            padding: '1rem 2.5rem',
+            fontSize: '1rem',
+            fontWeight: '600',
+            border: 'none',
+            borderRadius: '0.5rem',
+            cursor: 'pointer',
+            boxShadow: '0 4px 6px rgba(59, 130, 246, 0.1)',
+            transition: 'all 0.3s ease-in-out',
             '&:hover': {
-                transform: 'translateY(-3px)',
-                boxShadow: '0 8px 16px rgba(0,0,0,0.3)',
+                backgroundColor: '#2563EB',
+                transform: 'translateY(-2px)',
+                boxShadow: '0 6px 12px rgba(59, 130, 246, 0.15)',
             },
         },
         section: {
@@ -209,9 +241,9 @@ function LandingPage({ onNavigateToAuth, setView, handleUpgrade, currentUserPlan
                     </button>
                     <div style={landingPageStyles.navLinksWrapper}>
                         <ul style={landingPageStyles.navLinks}>
-                            <li><a href="#features" style={landingPageStyles.navLink} onClick={(e) => handleNavLinkClick(e, 'features')}>Características</a></li>
-                            <li><a href="#pricing" style={landingPageStyles.navLink} onClick={(e) => handleNavLinkClick(e, 'pricing')}>Precios</a></li>
-                            <li><a href="#contact" style={landingPageStyles.navLink} onClick={(e) => handleNavLinkClick(e, 'contact')}>Contacto</a></li>
+                            <li><NavLink href="#features" onClick={(e) => handleNavLinkClick(e, 'features')}>Características</NavLink></li>
+                            <li><NavLink href="#pricing" onClick={(e) => handleNavLinkClick(e, 'pricing')}>Precios</NavLink></li>
+                            <li><NavLink href="#contact" onClick={(e) => handleNavLinkClick(e, 'contact')}>Contacto</NavLink></li>
                         </ul>
                     </div>
                     <button onClick={() => onNavigateToAuth('auth')} style={styles.authToggle}>
@@ -244,7 +276,7 @@ function LandingPage({ onNavigateToAuth, setView, handleUpgrade, currentUserPlan
                             <p style={landingPageStyles.featureDescription}>Obtén datos meteorológicos detallados y confiables para cualquier ciudad del mundo al instante.</p>
                         </div>
                         <div style={landingPageStyles.featureCard}>
-                            <WandIcon />
+                            <RobotIcon />
                             <h3 style={landingPageStyles.featureTitle}>Consejos de Vestimenta con IA</h3>
                             <p style={landingPageStyles.featureDescription}>Sube fotos de tu ropa y recibe recomendaciones sobre qué ponerte según el clima de tu destino. (Premium/Pro)</p>
                         </div>
