@@ -1,10 +1,10 @@
 import React from 'react';
 import { styles } from '../styles/professionalStyles';
 
-function HistoryList({ historial, user, isHiding }) {
+function HistoryList({ historial, user }) {
     return (
-        <div className={isHiding ? 'fade-out' : 'fade-in'} style={{...styles.card, ...styles.historyCard}}>
-            <h3 style={styles.cardTitle}>Historial de Búsquedas</h3>
+        <div className="fade-in">
+            <h3 style={{...styles.cardTitle, textAlign: 'center'}}>Historial de Búsquedas</h3>
             {user.plan === 'free' && (
                 <div style={styles.freemiumMessage}>
                     Estás viendo tus últimas 5 búsquedas. <strong>¡Hazte Premium para ver el historial completo!</strong>

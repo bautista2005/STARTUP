@@ -242,30 +242,19 @@ def get_ai_outfit():
 
         prompt = (
         f"""
-            Analiza cada imagen profundamente para detectar las distintas prendas de las fotos
-            Luego, basándote en las prendas que se te muestran en las imágenes,
-            el clima actual, temperatura, sensasion termica, humedad, descripcion del clima y las preferencias del usuario, 
-            genera una recomendación de vestimenta completa y coherente para el día.
-            
-            Preferencias del usuario:
-            Estilo preferido: {user.estilo_preferido}
-            Actividad principal del día: {user.actividad_principal}
-            Sensibilidad al frío: {user.sensibilidad_frio}
+            Basándote en las prendas identificadas en las imágenes, el clima actual en {ciudad} (Temperatura: {temperatura}°C, Sensación térmica: {sensacion_termica}°C, Humedad: {humedad}%, Descripción: {descripcion}), y las preferencias del usuario (Estilo: {user.estilo_preferido}, Actividad: {user.actividad_principal}, Sensibilidad al frío: {user.sensibilidad_frio}), genera una recomendación de vestimenta estructurada y concisa. 
 
-            Clima actual en {ciudad}:
-            Temperatura: {temperatura}°C
-            Sensación térmica: {sensacion_termica}°C
-            Humedad: {humedad}%
-            Descripción del clima: {descripcion}
+            Tu recomendación debe incluir las siguientes secciones:
+            - Parte de arriba:
+            - Parte de abajo:
+            - Calzado:
+            - Capas adicionales (si aplica):
+            - Accesorios relevantes (si aplica):
 
-            Selecciona y describe claramente cada prenda para que el usuario pueda identificarlas claramente.
-            IMPORTANTE: Si hay prendas muy similares, hace un enfasis en la descripcion de la prenda que elegiste asi el usuario puede diferenciarla
-            y explica brevemente por qué la elegiste, relacionándola con el clima, la actividad o el estilo del usuario.
-            Asegurate de que todas las prendas elegidas combinen entre sí para formar un conjunto armonioso. 
-            
-            NO USES LETRAS NEGRITAS EN LAS RESPUESTAS, NO USES ASTERISCOS, NO USES HTML TAGS
+            Para cada prenda o accesorio sugerido, incluye una descripción muy breve de sus características (ej. 'camiseta blanca de algodón', 'pantalón vaquero oscuro', 'zapatillas deportivas') para que el usuario pueda identificarla en sus fotos. Enfócate en un atuendo práctico y con estilo. Responde directamente con la recomendación, sin introducciones ni despedidas. NO USES LETRAS NEGRITAS, ASTERISCOS, NI HTML TAGS.
         """
         )
+
 
         response = gemini_client.models.generate_content(
             model='gemini-2.5-flash-lite-preview-06-17',
@@ -359,6 +348,84 @@ def upgrade_plan():
         "mensaje": f"¡Felicidades! Has actualizado al plan {user.plan.title()}",
         "access_token": new_token
     }), 200
+
+# --- NUEVO ENDPOINT: ASISTENTE DE VIAJE IA ---
+@app.route('/api/v1/ai-travel-assistant', methods=['POST'])
+@jwt_required()
+def get_ai_travel_advice():
+    current_user_id = get_jwt_identity()
+    user = Users.query.get(current_user_id)
+    if not user:
+        return jsonify({"error": "Usuario no encontrado."}), 404
+
+    # 1. Verificar el plan del usuario
+    if user.plan not in ['premium', 'pro']:
+        return jsonify({"error": "Esta función requiere un plan Premium o Pro."}), 403
+
+    data = request.get_json()
+    ciudad_destino = data.get('ciudad_destino')
+    fecha_inicio_str = data.get('fecha_inicio')
+    fecha_fin_str = data.get('fecha_fin')
+
+    if not all([ciudad_destino, fecha_inicio_str, fecha_fin_str]):
+        return jsonify({"error": "Se requieren ciudad de destino, fecha de inicio y fecha de fin."}), 400
+
+    # 2. Obtener el pronóstico del tiempo (real)
+    datos_clima, status_code = obtener_datos_clima_api(ciudad_destino)
+    if not datos_clima:
+        return jsonify({"error": f"No se pudo obtener el clima para {ciudad_destino}. Código: {status_code}"}), status_code
+
+    if not geminiAPI:
+        return jsonify({"consejo": "La función de IA no está configurada."})
+
+    try:
+        descripcion = datos_clima['weather'][0]['description']
+        temperatura = datos_clima['main']['temp']
+        sensacion_termica = datos_clima['main']['feels_like']
+        humedad = datos_clima['main']['humidity']
+
+        # 3. Construir el prompt para la IA
+        prompt = (
+            f"""
+            Actúa como un asistente de viaje experto y conciso. Tu tarea es crear una lista de equipaje inteligente y detallada.
+            
+            Destino: {ciudad_destino}
+            Fechas del viaje: del {fecha_inicio_str} al {fecha_fin_str}
+            
+            Preferencias del usuario:
+            - Estilo preferido: {user.estilo_preferido}
+            - Actividad principal planeada: {user.actividad_principal}
+            - Sensibilidad al frío: {user.sensibilidad_frio}
+            
+            Clima actual en {ciudad_destino}:
+            Temperatura: {temperatura}°C
+            Sensación térmica: {sensacion_termica}°C
+            Humedad: {humedad}%
+            Descripción del clima: {descripcion}
+            
+            Basándote en toda esta información, genera una lista de equipaje organizada por categorías (ej. Ropa, Calzado, Accesorios, Artículos de Aseo, Documentos). 
+            Para cada prenda o artículo, sé específico (ej. '2 camisetas de algodón de manga corta', '1 par de zapatillas cómodas para caminar', '1 chaqueta impermeable ligera').
+            Añade una sección final con 2 o 3 consejos prácticos para el viaje basados en el clima y el destino.
+            
+            El resultado debe ser una lista fácil de leer y accionable para el usuario.
+            NO USES LETRAS NEGRITAS EN LAS RESPUESTAS, NO USES ASTERISCOS, NO USES HTML TAGS.
+            """
+        )
+
+        # 4. Generar y devolver la respuesta de la IA
+        response = gemini_client.models.generate_content(
+            model='gemini-2.5-flash-lite-preview-06-17',
+            config=types.GenerateContentConfig(
+                system_instruction="Eres un asistente de viajes y experto en planificación de equipaje.",
+                max_output_tokens=1000
+            ),
+            contents=[prompt]
+        )
+        return jsonify({"consejo": response.text})
+    except Exception as e:
+        print(f"Error al contactar la API de Gemini o procesar: {e}")
+        return jsonify({"error": "No se pudo generar el consejo de viaje de IA."}), 500
+
 
 # --- 8. Ejecución de la Aplicación ---
 if __name__ == '__main__':

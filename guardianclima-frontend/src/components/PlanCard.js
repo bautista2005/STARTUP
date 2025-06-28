@@ -8,7 +8,7 @@ const CheckIcon = () => (
     </svg>
 );
 
-function PlanCard({ plan, popular, handleUpgrade, isCurrentUserPlan }) {
+function PlanCard({ plan, popular, handleUpgrade, isCurrentUserPlan, onSelectPlan }) {
     const cardStyle = {
         ...styles.card,
         flex: 1,
@@ -45,7 +45,7 @@ function PlanCard({ plan, popular, handleUpgrade, isCurrentUserPlan }) {
             <button
                 className={buttonStyle}
                 style={{width: '100%', marginTop: '2rem'}}
-                onClick={() => handleUpgrade(plan.id)}
+                onClick={() => isCurrentUserPlan ? null : (onSelectPlan ? onSelectPlan() : handleUpgrade(plan.id))}
                 disabled={isCurrentUserPlan}
             >
                 {isCurrentUserPlan ? 'Tu Plan Actual' : plan.cta}

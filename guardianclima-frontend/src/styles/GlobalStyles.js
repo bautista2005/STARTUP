@@ -3,6 +3,16 @@ import React from 'react';
 // Componente que inyecta estilos globales en la aplicación.
 export const GlobalStyles = () => (
   <style>{`
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow-x: hidden; /* Prevent horizontal scroll */
+    }
+    * {
+      box-sizing: border-box;
+    }
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }

@@ -10,11 +10,12 @@ import AuthView from './components/AuthView';
 import PersonalizationView from './components/PersonalizationView';
 import MainView from './components/MainView';
 import PricingPage from './components/PricingPage';
+import LandingPage from './components/LandingPage';
 
 // --- COMPONENTE PRINCIPAL ---
 function App() {
   // --- 2. GESTIÓN DEL ESTADO CENTRALIZADO ---
-  const [view, setView] = useState('auth');
+  const [view, setView] = useState('landing');
   const [user, setUser] = useState(null);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -30,13 +31,19 @@ function App() {
   const [historial, setHistorial] = useState([]);
   const [consejoIA, setConsejoIA] = useState('');
   const [isAdviceLoading, setIsAdviceLoading] = useState(false);
-  const [isHidingHistory, setIsHidingHistory] = useState(false);
 
   // --- NUEVOS ESTADOS PARA LA FUNCIONALIDAD DE IA CON IMÁGENES ---
   const [selectedFiles, setSelectedFiles] = useState([]); // Array para los archivos de imagen seleccionados
   const [aiOutfitConsejo, setAiOutfitConsejo] = useState(null); // Para el consejo de vestimenta con imágenes
   const [isAiOutfitLoading, setIsAiOutfitLoading] = useState(false); // Para el estado de carga del consejo de vestimenta
   const [aiOutfitError, setAiOutfitError] = useState(null); // Para errores del consejo de vestimenta con imágenes
+  const [submittedImages, setSubmittedImages] = useState([]); // Para las imágenes que generaron el consejo
+  const [outfitCity, setOutfitCity] = useState(''); // --- NUEVO: Ciudad para el consejo de outfit
+
+  // --- ESTADOS PARA EL ASISTENTE DE VIAJE ---
+  const [travelAdvice, setTravelAdvice] = useState(null);
+  const [isTravelLoading, setIsTravelLoading] = useState(false);
+  const [travelError, setTravelError] = useState(null);
   // --- FIN DE NUEVOS ESTADOS ---
 
 
@@ -55,18 +62,12 @@ function App() {
             prefs_saved: decoded.prefs_saved
         };
         setUser(currentUser);
-        if (!currentUser.prefs_saved) {
-            setView('personalization');
-        } else {
-            setView('main');
-        }
       } catch (e) {
         console.error("Token inválido o expirado:", e); // Añadir log para depuración
         handleLogout();
       }
     } else {
       setUser(null);
-      setView('auth');
     }
   };
 
@@ -118,7 +119,53 @@ function App() {
     setAiOutfitConsejo(null); // Limpiar también el consejo de vestimenta por imágenes
     setError('');
     setView('auth');
+    // Limpiar los campos de autenticación al cerrar sesión
+    setUsername('');
+    setEmail('');
+    setPassword('');
   };
+
+  // --- NUEVA FUNCIÓN: Manejar el cambio entre login y registro ---
+  const handleToggleAuthMode = () => {
+    setUsername('');
+    setEmail('');
+    setPassword('');
+    setError(''); // Limpiar cualquier error previo
+    // No es necesario cambiar la vista aquí, AuthView maneja su propio estado isRegister
+  };
+
+  // --- NUEVA FUNCIÓN: Cargar historial de consultas ---
+  const handleFetchHistory = async () => {
+    const storedToken = localStorage.getItem('token');
+    if (!storedToken) return;
+
+    try {
+      const res = await fetch(`${API_URL}/api/v1/history`, {
+        headers: { 'Authorization': `Bearer ${storedToken}` }
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Error al cargar el historial.');
+      setHistorial(data);
+    } catch (err) {
+      console.error("Error al cargar historial:", err.message);
+      setError("No se pudo cargar el historial de consultas.");
+    }
+  };
+
+  useEffect(() => {
+    const storedToken = localStorage.getItem('token');
+    if (storedToken) {
+        updateUserFromToken(storedToken);
+    }
+  }, []);
+
+  // --- NUEVO: Cargar historial y cambiar vista cuando el usuario está autenticado ---
+  useEffect(() => {
+    if (user) {
+      handleFetchHistory();
+      setView('main');
+    }
+  }, [user]);
 
   const handleBuscarClima = async () => {
     if (!ciudad) return;
@@ -131,25 +178,13 @@ function App() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Ciudad no encontrada o error en el servidor.');
       setClima(data);
-    } catch (err) { setError(err.message); }
-    finally { setIsLoading(false); }
-  };
-
-  const handleBuscarHistorial = async () => {
-    if (historial.length > 0) {
-        setIsHidingHistory(true);
-        setTimeout(() => { setHistorial([]); setIsHidingHistory(false); }, 500);
-        return;
-    }
-    setIsLoading(true); setError('');
-    try {
-      const storedToken = localStorage.getItem('token');
-      const res = await fetch(`${API_URL}/api/v1/history`, {
-        headers: { 'Authorization': `Bearer ${storedToken}` }
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'No se pudo cargar el historial.');
-      setHistorial(data);
+      // Add new weather data to history
+      setHistorial(prevHistorial => [{
+        ciudad: data.name,
+        temperatura: data.main.temp,
+        descripcion: data.weather[0].description,
+        fecha: new Date().toISOString().split('T')[0] // Current date
+      }, ...prevHistorial]);
     } catch (err) { setError(err.message); }
     finally { setIsLoading(false); }
   };
@@ -176,21 +211,21 @@ function App() {
       setAiOutfitError("Por favor, selecciona al menos una imagen.");
       return;
     }
-    const ciudadActual = clima?.name || ciudad; // Usar la ciudad del clima actual o la ciudad buscada
-    if (!ciudadActual) {
-      setAiOutfitError("Por favor, busca una ciudad primero para obtener el clima actual.");
+    if (!outfitCity) { // --- NUEVO: Validar que la ciudad del outfit no esté vacía
+      setAiOutfitError("Por favor, ingresa una ciudad para el consejo de vestimenta.");
       return;
     }
 
     setIsAiOutfitLoading(true);
     setAiOutfitError(null);
     setAiOutfitConsejo(null);
+    setSubmittedImages([]); // Limpiar imágenes anteriores
 
     const formData = new FormData();
     selectedFiles.forEach(file => {
       formData.append('imagenes', file);
     });
-    formData.append('ciudad', ciudadActual);
+    formData.append('ciudad', outfitCity); // --- NUEVO: Usar la ciudad del outfit
 
     try {
       const token = localStorage.getItem('token');
@@ -215,12 +250,56 @@ function App() {
 
       const data = await response.json();
       setAiOutfitConsejo(data.consejo);
+      // Guardar las imágenes que se usaron para generar este consejo
+      setSubmittedImages(selectedFiles.map(file => URL.createObjectURL(file)));
     } catch (err) {
       console.error("Error al generar consejo de vestimenta con IA:", err);
       setAiOutfitError(err.message || "Ocurrió un error al generar el consejo de vestimenta.");
     } finally {
       setIsAiOutfitLoading(false);
       setSelectedFiles([]); // Limpiar los archivos seleccionados después de la subida
+    }
+  };
+
+  // --- NUEVA FUNCIÓN: Generar consejo de viaje con IA ---
+  const handleGenerateTravelAdvice = async (destination, startDate, endDate) => {
+    setIsTravelLoading(true);
+    setTravelError(null);
+    setTravelAdvice(null);
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_URL}/api/v1/ai-travel-assistant`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ 
+          ciudad_destino: destination, 
+          fecha_inicio: startDate, 
+          fecha_fin: endDate 
+        }),
+      });
+
+      if (response.status === 403) {
+          const errorData = await response.json();
+          setTravelError(errorData.error || "Acceso denegado. Esta función es solo para usuarios Premium/Pro.");
+          return;
+      }
+
+      if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Error al generar el asistente de viaje.');
+      }
+
+      const data = await response.json();
+      setTravelAdvice(data.consejo);
+    } catch (err) {
+      console.error("Error al generar consejo de viaje con IA:", err);
+      setTravelError(err.message || "Ocurrió un error al generar el consejo de viaje.");
+    } finally {
+      setIsTravelLoading(false);
     }
   };
   // --- FIN NUEVA FUNCIÓN ---
@@ -254,23 +333,24 @@ function App() {
 
   // --- 4. RENDERIZADO CONDICIONAL DE VISTAS ---
   const renderContent = () => {
-    if (!user) {
-      return (
-        <AuthView
-          handleAuth={handleAuth}
-          isLoading={isLoading}
-          error={error}
-          username={username}
-          setUsername={setUsername}
-          email={email}
-          setEmail={setEmail}
-          password={password}
-          setPassword={setPassword}
-        />
-      );
-    }
-
     switch(view) {
+      case 'auth':
+        return (
+          <AuthView
+            handleAuth={handleAuth}
+            isLoading={isLoading}
+            error={error}
+            username={username}
+            setUsername={setUsername}
+            email={email}
+            setEmail={setEmail}
+            password={password}
+            setPassword={setPassword}
+            handleToggleAuthMode={handleToggleAuthMode}
+            setView={setView}
+          />
+        );
+
       case 'personalization':
         return <PersonalizationView setView={setView} user={user} setUser={setUser} />;
 
@@ -285,13 +365,11 @@ function App() {
             handleBuscarClima={handleBuscarClima}
             isLoading={isLoading}
             isAdviceLoading={isAdviceLoading} // para el consejo IA básico
-            handleBuscarHistorial={handleBuscarHistorial}
             historial={historial}
             error={error}
             clima={clima}
             consejoIA={consejoIA} // consejo IA básico
             handleConsejoIA={handleConsejoIA} // función para consejo IA básico
-            isHidingHistory={isHidingHistory}
             // --- NUEVAS PROPS PARA EL CONSEJO DE VESTIMENTA CON IMÁGENES ---
             selectedFiles={selectedFiles}
             setSelectedFiles={setSelectedFiles}
@@ -299,14 +377,24 @@ function App() {
             isAiOutfitLoading={isAiOutfitLoading}
             aiOutfitError={aiOutfitError}
             handleGenerateAiOutfit={handleGenerateAiOutfit}
+            submittedImages={submittedImages} // Pasar las imágenes enviadas
+            outfitCity={outfitCity} // --- NUEVO: Pasar la ciudad del outfit
+            setOutfitCity={setOutfitCity} // --- NUEVO: Pasar el setter de la ciudad del outfit
+
+            // --- PROPS PARA EL ASISTENTE DE VIAJE ---
+            handleGenerateTravelAdvice={handleGenerateTravelAdvice}
+            isTravelLoading={isTravelLoading}
+            travelAdvice={travelAdvice}
+            travelError={travelError}
+            handleFetchHistory={handleFetchHistory} // --- NUEVO: Pasar la función para recargar el historial
             // --- FIN NUEVAS PROPS ---
           />
         );
       case 'pricing':
         return <PricingPage setView={setView} handleUpgrade={handleUpgradePlan} currentUserPlan={user.plan} />;
 
-      default:
-        return <MainView user={user} setView={setView} handleLogout={handleLogout} />;
+      default: // This will be 'landing' by default, or any other unhandled view
+        return <LandingPage onNavigateToAuth={setView} handleUpgrade={handleUpgradePlan} currentUserPlan={user?.plan} />;
     }
   }
 
