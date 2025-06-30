@@ -1,12 +1,25 @@
 // Exporta el objeto de estilos para ser usado por los componentes.
 export const styles = {
-    appWrapper: { backgroundColor: '#FFFFFF', minHeight: '100vh', display: 'flex', flexDirection: 'column', paddingTop: '4rem', paddingBottom: '4rem', fontFamily: "'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif,'Apple Color Emoji','Segoe UI Emoji','Segoe UI Symbol'" },
-    container: { width: '100%', maxWidth: '1200px', margin: '0 auto', padding: '0 2rem' },
+    appWrapper: { 
+        backgroundColor: '#F8FAFC', 
+        minHeight: '100vh', 
+        display: 'flex', 
+        flexDirection: 'column', 
+        paddingTop: '2rem', 
+        paddingBottom: '2rem', 
+        fontFamily: "'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif,'Apple Color Emoji','Segoe UI Emoji','Segoe UI Symbol'" 
+    },
+    container: { 
+        width: '100%', 
+        maxWidth: '1400px', 
+        margin: '0 auto', 
+        padding: '0 2rem' 
+    },
     authContainer: {
         backgroundColor: '#FFFFFF',
-        padding: '1rem 3rem',
+        padding: '2rem 3rem',
         borderRadius: '1.5rem',
-        boxShadow: '0 10px 25px rgba(0, 0, 0, 0.1)',
+        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
         textAlign: 'center',
         display: 'flex',
         flexDirection: 'column',
@@ -52,60 +65,333 @@ export const styles = {
             boxShadow: '0 0 0 3px rgba(59, 130, 246, 0.1)',
         },
     },
-    inputLabel: { display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: '600', color: '#4b5563' },
-    mainHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' },
-    header: { margin: 0, fontSize: '2rem', fontWeight: 700, color: '#3B82F6' },
-    subtitle: { marginTop: '0.25rem', color: '#6B7280' },
-    card: { backgroundColor: 'white', padding: '1.5rem', borderRadius: '1.5rem', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)', marginBottom: '1.5rem', width: '100%', boxSizing: 'border-box' },
-    searchSection: { display: 'flex', gap: '0.5rem', width: '100%' },
-    searchInput: { flex: 1, padding: '0.75rem 1rem', fontSize: '1rem', border: '2px solid #d1d5db', borderRadius: '0.75rem', outline: 'none' },
-    historyToggle: { background: 'none', border: 'none', color: '#3B82F6', cursor: 'pointer', marginTop: '1rem', padding: 0, fontWeight: 600 },
-    error: { color: '#ef4444', textAlign: 'center', fontWeight: '600', marginTop: '1rem' },
-    weatherHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '1px solid #f3f4f6', paddingBottom: '1rem' },
-    weatherCity: { margin: 0, fontSize: '1.5rem', fontWeight: 600 },
-    weatherDescription: { margin: '0.25rem 0 0 0', color: '#6B7280', textTransform: 'capitalize' },
-    weatherIcon: { width: '60px', height: '60px', marginTop: '-10px', marginRight: '-10px' },
-    weatherGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginTop: '1rem' },
-    infoCard: { borderRadius: '1rem', padding: '1rem', display: 'flex', alignItems: 'center', gap: '1rem' },
-    tempCard: { backgroundColor: '#fff1f2', color: '#be123c' },
-    humidityCard: { backgroundColor: '#eff6ff', color: '#2563eb' },
-    aiButton: { marginTop: '1.5rem', background: 'linear-gradient(to right, #3B82F6, #2563EB)', color: 'white', border: 'none', borderRadius: '0.75rem', padding: '0.75rem 1.5rem', fontWeight: '600', cursor: 'pointer', transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.06)' },
-    aiAdvice: { marginTop: '1.5rem', backgroundColor: '#F0F9FF', padding: '1.5rem', borderRadius: '1rem', display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center', border: '1px solid #BFDBFE' },
-    aiAdviceIconContainer: { backgroundColor: '#DBEAFE', borderRadius: '9999px', padding: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
-    aiAdviceTitle: { margin: '0 0 0.5rem 0', fontWeight: 600, color: '#5b21b6', },
-    aiAdviceText: { margin: 0, color: '#4b5563', lineHeight: '1.6' },
-    cardTitle: { marginTop: 0, fontWeight: 600, paddingBottom: '0.5rem' },
-    mainContentFlexWrapper: {
+    inputLabel: { 
+        display: 'block', 
+        marginBottom: '0.5rem', 
+        fontSize: '0.875rem', 
+        fontWeight: '600', 
+        color: '#4b5563' 
+    },
+    
+    // Enhanced MainView Header Styles
+    mainHeader: { 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center', 
+        marginBottom: '2rem',
+        padding: '1.5rem 2rem',
+        backgroundColor: '#FFFFFF',
+        borderRadius: '1.5rem',
+        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+        border: '1px solid #F1F5F9'
+    },
+    header: { 
+        margin: 0, 
+        fontSize: '2.25rem', 
+        fontWeight: 800, 
+        background: 'linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%)',
+        backgroundClip: 'text',
+        WebkitBackgroundClip: 'text',
+        WebkitTextFillColor: 'transparent',
+        letterSpacing: '-0.025em'
+    },
+    subtitle: { 
+        marginTop: '0.5rem', 
+        color: '#64748B',
+        fontSize: '1.125rem',
+        fontWeight: 500
+    },
+    
+    // Enhanced Card Styles
+    card: { 
+        backgroundColor: '#FFFFFF', 
+        padding: '2rem', 
+        borderRadius: '1.5rem', 
+        boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)', 
+        marginBottom: '2rem', 
+        width: '100%', 
+        boxSizing: 'border-box',
+        border: '1px solid #F1F5F9',
+        transition: 'all 0.3s ease-in-out',
+        '&:hover': {
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+            transform: 'translateY(-2px)'
+        }
+    },
+    
+    // Enhanced Search Section
+    searchSection: { 
+        display: 'flex', 
+        gap: '1rem', 
+        width: '100%',
+        alignItems: 'center'
+    },
+    searchInput: { 
+        flex: 1, 
+        padding: '1rem 1.5rem', 
+        fontSize: '1rem', 
+        border: '2px solid #E2E8F0', 
+        borderRadius: '1rem', 
+        outline: 'none',
+        transition: 'all 0.3s ease-in-out',
+        backgroundColor: '#F8FAFC',
+        '&:focus': {
+            borderColor: '#3B82F6',
+            backgroundColor: '#FFFFFF',
+            boxShadow: '0 0 0 3px rgba(59, 130, 246, 0.1)'
+        },
+        '&::placeholder': {
+            color: '#94A3B8'
+        }
+    },
+    
+    // Enhanced File Input
+    fileInput: {
+        padding: '1rem 1.5rem',
+        fontSize: '1rem',
+        border: '2px dashed #CBD5E1',
+        borderRadius: '1rem',
+        outline: 'none',
+        transition: 'all 0.3s ease-in-out',
+        backgroundColor: '#F8FAFC',
+        cursor: 'pointer',
+        '&:hover': {
+            borderColor: '#3B82F6',
+            backgroundColor: '#EFF6FF'
+        },
+        '&:focus': {
+            borderColor: '#3B82F6',
+            backgroundColor: '#FFFFFF',
+            boxShadow: '0 0 0 3px rgba(59, 130, 246, 0.1)'
+        }
+    },
+    
+    historyToggle: { 
+        background: 'none', 
+        border: 'none', 
+        color: '#3B82F6', 
+        cursor: 'pointer', 
+        marginTop: '1rem', 
+        padding: 0, 
+        fontWeight: 600 
+    },
+    error: { 
+        color: '#DC2626', 
+        textAlign: 'center', 
+        fontWeight: '600', 
+        marginTop: '1rem',
+        padding: '1rem',
+        backgroundColor: '#FEF2F2',
+        borderRadius: '0.75rem',
+        border: '1px solid #FECACA'
+    },
+    
+    // Enhanced Weather Styles
+    weatherHeader: { 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'flex-start', 
+        borderBottom: '2px solid #F1F5F9', 
+        paddingBottom: '1.5rem',
+        marginBottom: '1.5rem'
+    },
+    weatherCity: { 
+        margin: 0, 
+        fontSize: '1.75rem', 
+        fontWeight: 700,
+        color: '#1E293B'
+    },
+    weatherDescription: { 
+        margin: '0.5rem 0 0 0', 
+        color: '#64748B', 
+        textTransform: 'capitalize',
+        fontSize: '1.125rem',
+        fontWeight: 500
+    },
+    weatherIcon: { 
+        width: '80px', 
+        height: '80px', 
+        marginTop: '-10px', 
+        marginRight: '-10px' 
+    },
+    weatherGrid: { 
+        display: 'grid', 
+        gridTemplateColumns: '1fr 1fr', 
+        gap: '1.5rem', 
+        marginTop: '1.5rem' 
+    },
+    infoCard: { 
+        borderRadius: '1rem', 
+        padding: '1.5rem', 
+        display: 'flex', 
+        alignItems: 'center', 
+        gap: '1rem',
+        transition: 'all 0.3s ease-in-out',
+        '&:hover': {
+            transform: 'translateY(-2px)',
+            boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)'
+        }
+    },
+    tempCard: { 
+        backgroundColor: '#FEF2F2', 
+        color: '#DC2626',
+        border: '1px solid #FECACA'
+    },
+    humidityCard: { 
+        backgroundColor: '#EFF6FF', 
+        color: '#2563EB',
+        border: '1px solid #BFDBFE'
+    },
+    
+    // Enhanced AI Button
+    aiButton: { 
+        marginTop: '1.5rem', 
+        background: 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)', 
+        color: 'white', 
+        border: 'none', 
+        borderRadius: '1rem', 
+        padding: '1rem 2rem', 
+        fontWeight: '600', 
+        cursor: 'pointer', 
+        transition: 'all 0.3s ease-in-out', 
+        boxShadow: '0 10px 15px -3px rgba(59, 130, 246, 0.3), 0 4px 6px -2px rgba(59, 130, 246, 0.2)',
+        fontSize: '1rem',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '0.75rem',
+        '&:hover:not(:disabled)': {
+            transform: 'translateY(-3px)',
+            boxShadow: '0 20px 25px -5px rgba(59, 130, 246, 0.4), 0 10px 10px -5px rgba(59, 130, 246, 0.3)'
+        },
+        '&:disabled': {
+            opacity: 0.6,
+            cursor: 'not-allowed',
+            transform: 'none'
+        }
+    },
+    
+    // Enhanced AI Advice
+    aiAdvice: { 
+        marginTop: '2rem', 
+        backgroundColor: '#F0F9FF', 
+        padding: '2rem', 
+        borderRadius: '1.5rem', 
+        display: 'flex', 
+        flexDirection: 'column', 
+        gap: '1.5rem', 
+        alignItems: 'center', 
+        border: '2px solid #BFDBFE',
+        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+    },
+    aiAdviceIconContainer: { 
+        backgroundColor: '#DBEAFE', 
+        borderRadius: '50%', 
+        padding: '1rem', 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'center', 
+        flexShrink: 0,
+        width: '60px',
+        height: '60px',
+        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+    },
+    aiAdviceTitle: { 
+        margin: '0 0 1rem 0', 
+        fontWeight: 700, 
+        color: '#1E40AF',
+        fontSize: '1.25rem'
+    },
+    aiAdviceText: { 
+        margin: 0, 
+        color: '#374151', 
+        lineHeight: '1.7',
+        fontSize: '1rem',
+        textAlign: 'center'
+    },
+    
+    cardTitle: { 
+        marginTop: 0, 
+        fontWeight: 700, 
+        paddingBottom: '1rem',
+        fontSize: '1.5rem',
+        color: '#1E293B'
+    },
+    
+    // Enhanced Main Content Layout
+    mainContentWrapper: {
         display: 'flex',
         flexDirection: 'column',
-        marginTop: '2rem', // Moved marginTop here
-        alignItems: 'flex-start',
+        gap: '2rem'
     },
     mainContentArea: {
-        width: '100%', // Reverted to 100% to allow dynamic sizing within the larger container
+        width: '100%',
         display: 'flex',
         flexDirection: 'column',
-        gap: '1.5rem', // Space between cards
+        gap: '2rem'
     },
+    
+    // Enhanced History Card
     historyCard: {
         flexShrink: 0,
-        width: '500px',
-        maxHeight: 'calc(100vh - 4rem)',
-        overflowY: 'auto', // Changed to auto to allow scrolling
-        transition: 'width 0.3s ease-in-out, opacity 0.3s ease-in-out',
+        width: '350px',
+        maxHeight: 'calc(100vh - 6rem)',
+        overflowY: 'auto',
+        transition: 'all 0.3s ease-in-out',
+        position: 'sticky',
+        top: '2rem'
     },
     historyList: {
         listStyleType: 'none',
         padding: 0,
         margin: '0 0.5rem 0 0',
-        maxHeight: '500px', // Aproximadamente 5 elementos de historial
-        overflowY: 'auto',
+        maxHeight: '600px',
+        overflowY: 'auto'
     },
-    historyItem: { display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem', backgroundColor: '#F9FAFB', borderRadius: '1rem', marginBottom: '0.75rem', transition: 'all 0.3s ease-in-out' },
-    historyTempBubble: { backgroundColor: '#BFDBFE', color: '#1E40AF', padding: '0.5rem 0.75rem', borderRadius: '9999px', fontWeight: '600', fontSize: '0.875rem' },
-    historyCity: { fontWeight: 600, color: '#1e293b' },
-    historyDesc: { margin: 0, color: '#64748b', textTransform: 'capitalize', fontSize: '0.875rem' },
-    historyDate: { color: '#64748b', fontSize: '0.875rem', marginLeft: 'auto' },
+    historyItem: { 
+        display: 'flex', 
+        alignItems: 'center', 
+        gap: '1rem', 
+        padding: '1.25rem', 
+        backgroundColor: '#F8FAFC', 
+        borderRadius: '1rem', 
+        marginBottom: '1rem', 
+        transition: 'all 0.3s ease-in-out',
+        border: '1px solid #F1F5F9',
+        '&:hover': {
+            backgroundColor: '#F1F5F9',
+            transform: 'translateX(4px)',
+            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+        }
+    },
+    historyTempBubble: { 
+        backgroundColor: '#DBEAFE', 
+        color: '#1E40AF', 
+        padding: '0.5rem 1rem', 
+        borderRadius: '9999px', 
+        fontWeight: '700', 
+        fontSize: '0.875rem',
+        border: '1px solid #BFDBFE'
+    },
+    historyCity: { 
+        fontWeight: 600, 
+        color: '#1E293B',
+        fontSize: '1rem'
+    },
+    historyDesc: { 
+        margin: 0, 
+        color: '#64748B', 
+        textTransform: 'capitalize', 
+        fontSize: '0.875rem',
+        fontWeight: 500
+    },
+    historyDate: { 
+        color: '#94A3B8', 
+        fontSize: '0.75rem', 
+        marginLeft: 'auto',
+        fontWeight: 500
+    },
+    
     authToggle: {
         background: 'none',
         border: 'none',
@@ -139,21 +425,100 @@ export const styles = {
             cursor: 'not-allowed',
         },
     },
-    planTag: { display: 'inline-block', padding: '0.25rem 0.75rem', borderRadius: '9999px', fontSize: '0.75rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'white' },
-    freeTag: { color: '#4b5563', backgroundColor: '#e5e7eb' },
-    premiumTag: { background: 'linear-gradient(to right, #60A5FA, #3B82F6)', boxShadow: '0 2px 8px rgba(59, 130, 246, 0.4)' },
-    proTag: { background: 'linear-gradient(to right, #1D4ED8, #3B82F6)', boxShadow: '0 2px 8px rgba(59, 130, 246, 0.4)' },
-    freemiumMessage: { backgroundColor: '#E0F2FE', color: '#1E40AF', padding: '1rem', borderRadius: '0.75rem', marginBottom: '1rem', textAlign: 'center', fontSize: '0.875rem' },
-    upgradeButton: { display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'linear-gradient(to right, #3B82F6, #2563EB)', color: 'white', border: 'none', borderRadius: '0.75rem', padding: '0.5rem 1rem', fontWeight: '600', cursor: 'pointer', transition: 'transform 0.2s ease-in-out', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.06)'},
-    aiAdviceText: {margin: 0,color: '#4A5568',lineHeight: '1.6',whiteSpace: 'pre-wrap',},
+    
+    // Enhanced Plan Tags
+    planTag: { 
+        display: 'inline-block', 
+        padding: '0.5rem 1rem', 
+        borderRadius: '9999px', 
+        fontSize: '0.75rem', 
+        fontWeight: '700', 
+        textTransform: 'uppercase', 
+        letterSpacing: '0.05em', 
+        color: 'white',
+        boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
+    },
+    freeTag: { 
+        color: '#374151', 
+        backgroundColor: '#F3F4F6',
+        border: '1px solid #E5E7EB'
+    },
+    premiumTag: { 
+        background: 'linear-gradient(135deg, #60A5FA 0%, #3B82F6 100%)', 
+        boxShadow: '0 4px 12px rgba(59, 130, 246, 0.4)' 
+    },
+    proTag: { 
+        background: 'linear-gradient(135deg, #1D4ED8 0%, #3B82F6 100%)', 
+        boxShadow: '0 4px 12px rgba(59, 130, 246, 0.4)' 
+    },
+    
+    freemiumMessage: { 
+        backgroundColor: '#E0F2FE', 
+        color: '#1E40AF', 
+        padding: '1.25rem', 
+        borderRadius: '1rem', 
+        marginBottom: '1.5rem', 
+        textAlign: 'center', 
+        fontSize: '0.875rem',
+        border: '1px solid #BFDBFE',
+        fontWeight: 500
+    },
+    
+    // Enhanced Upgrade Button
+    upgradeButton: { 
+        display: 'inline-flex', 
+        alignItems: 'center', 
+        gap: '0.75rem', 
+        background: 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)', 
+        color: 'white', 
+        border: 'none', 
+        borderRadius: '1rem', 
+        padding: '0.75rem 1.5rem', 
+        fontWeight: '600', 
+        cursor: 'pointer', 
+        transition: 'all 0.3s ease-in-out', 
+        boxShadow: '0 10px 15px -3px rgba(59, 130, 246, 0.3), 0 4px 6px -2px rgba(59, 130, 246, 0.2)',
+        fontSize: '0.875rem',
+        '&:hover': {
+            transform: 'translateY(-2px)',
+            boxShadow: '0 20px 25px -5px rgba(59, 130, 246, 0.4), 0 10px 10px -5px rgba(59, 130, 246, 0.3)'
+        }
+    },
+    
+    // Enhanced Premium Card Title
     premiumCardTitle: {
         marginTop: 0,
         fontWeight: 700,
-        paddingBottom: '0.5rem',
-        color: '#3B82F6', // Un color morado que ya usas en la app
-        textAlign: 'center'
+        paddingBottom: '1rem',
+        color: '#1E40AF',
+        textAlign: 'center',
+        fontSize: '1.5rem',
+        background: 'linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%)',
+        backgroundClip: 'text',
+        WebkitBackgroundClip: 'text',
+        WebkitTextFillColor: 'transparent'
     },
-    imageGallery: { display: 'flex', gap: '1rem', marginTop: '1rem', marginBottom: '1rem' },
-    galleryImage: { width: '80px', height: '80px', borderRadius: '1rem', objectFit: 'cover', border: '2px solid #BFDBFE' },
-
-    };
+    
+    // Enhanced Image Gallery
+    imageGallery: { 
+        display: 'flex', 
+        gap: '1rem', 
+        marginTop: '1.5rem', 
+        marginBottom: '1.5rem',
+        flexWrap: 'wrap',
+        justifyContent: 'center'
+    },
+    galleryImage: { 
+        width: '100px', 
+        height: '100px', 
+        borderRadius: '1rem', 
+        objectFit: 'cover', 
+        border: '3px solid #BFDBFE',
+        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+        transition: 'all 0.3s ease-in-out',
+        '&:hover': {
+            transform: 'scale(1.05)',
+            boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.2)'
+        }
+    },
+};

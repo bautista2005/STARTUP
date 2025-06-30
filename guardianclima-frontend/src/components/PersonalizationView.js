@@ -32,6 +32,26 @@ function PersonalizationView({ setView, user, setUser }) {
             id: 'travelFrequency',
             label: '¿Con qué frecuencia viajas?',
             options: ['Ocasional (1-2 veces al año)', 'Frecuente (3-6 veces al año)', 'Muy Frecuente (>6 veces al año)', 'Rara vez']
+        },
+        {
+            id: 'shoeType',
+            label: '¿Qué tipo de calzado prefieres?',
+            options: ['Deportivo', 'Casual', 'Elegante', 'Sandalias', 'Botas', 'Zapatillas']
+        },
+        {
+            id: 'exerciseFrequency',
+            label: '¿Con qué frecuencia realizas ejercicio físico?',
+            options: ['Diario', 'Varias veces a la semana', 'Ocasional', 'Rara vez', 'Nunca']
+        },
+        {
+            id: 'fabricPreference',
+            label: '¿Qué tipo de tejido prefieres en tu ropa?',
+            options: ['Algodón', 'Sintético', 'Lana', 'Lino', 'Mezcla', 'No tengo preferencia']
+        },
+        {
+            id: 'prendaFavorita',
+            label: '¿Qué prenda no puede faltar en tu outfit ideal?',
+            options: ['Camiseta', 'Camisa', 'Chaqueta', 'Jeans', 'Pantalón de vestir', 'Falda', 'Vestido', 'Zapatillas', 'Botas', 'Accesorios']
         }
     ];
 
@@ -42,7 +62,11 @@ function PersonalizationView({ setView, user, setUser }) {
         sensitivity: 'Normal',
         preferredColors: 'Neutros (negro, blanco, gris, beige)',
         weatherPreference: 'Templado (15-25°C)',
-        travelFrequency: 'Ocasional (1-2 veces al año)'
+        travelFrequency: 'Ocasional (1-2 veces al año)',
+        shoeType: 'Deportivo',
+        exerciseFrequency: 'Ocasional',
+        fabricPreference: 'Algodón',
+        prendaFavorita: 'Camiseta',
     });
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
@@ -84,6 +108,10 @@ function PersonalizationView({ setView, user, setUser }) {
                     colores_preferidos: answers.preferredColors,
                     preferencia_clima: answers.weatherPreference,
                     frecuencia_viajes: answers.travelFrequency,
+                    tipo_calzado: answers.shoeType,
+                    frecuencia_ejercicio: answers.exerciseFrequency,
+                    preferencia_tejido: answers.fabricPreference,
+                    prenda_favorita: answers.prendaFavorita,
                 }),
             });
 
@@ -110,63 +138,81 @@ function PersonalizationView({ setView, user, setUser }) {
     const currentQuestion = questions[currentPage];
 
     return (
-        <div className="fade-in" style={styles.authContainer}>
-            <h2 style={styles.authTitle}>¡Personaliza tu Experiencia!</h2>
-            <p style={styles.authSubtitle}>Ayúdanos a darte los mejores consejos. Esto potenciará la IA.</p>
-
-            <div style={{ width: '100%', marginBottom: '2rem' }}>
-                <div style={{ height: '8px', backgroundColor: '#e0e0e0', borderRadius: '4px' }}>
-                    <div style={{ width: `${progress}%`, height: '100%', backgroundColor: '#4CAF50', borderRadius: '4px', transition: 'width 0.5s ease-in-out' }}></div>
+        <div style={{ minHeight: '100vh', background: '#F8FAFC', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem 0' }}>
+            <div style={{ ...styles.card, maxWidth: '600px', width: '100%', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '2rem', boxSizing: 'border-box' }}>
+                <div>
+                    <h2 style={{ ...styles.authTitle, marginBottom: 0 }}>¡Personaliza tu Experiencia!</h2>
+                    <p style={styles.authSubtitle}>Ayúdanos a darte los mejores consejos. Esto potenciará la IA.</p>
                 </div>
-                <p style={{ textAlign: 'right', marginTop: '0.5rem', fontSize: '0.9rem', color: '#6b7280' }}>
-                    Pregunta {currentPage + 1} de {questions.length}
-                </p>
-            </div>
 
-            <div style={{ maxWidth: '600px', width: '100%', margin: '0 auto', textAlign: 'center', minHeight: '200px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
-                <h3 style={{ fontSize: '1.5rem', fontWeight: 600, color: '#374151', marginBottom: '1.5rem' }}>{currentQuestion.label}</h3>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '1rem', maxHeight: '300px', overflowY: 'auto', padding: '0.5rem' }}>
-                    {currentQuestion.options.map((option, index) => (
+                {/* Progress Bar */}
+                <div style={{ width: '100%' }}>
+                    <div style={{ height: '8px', backgroundColor: '#e0e0e0', borderRadius: '4px', marginBottom: '0.5rem' }}>
+                        <div style={{ width: `${progress}%`, height: '100%', background: 'linear-gradient(90deg, #3B82F6 0%, #1D4ED8 100%)', borderRadius: '4px', transition: 'width 0.5s ease-in-out' }}></div>
+                    </div>
+                    <p style={{ textAlign: 'right', fontSize: '0.95rem', color: '#6b7280', margin: 0 }}>
+                        Pregunta {currentPage + 1} de {questions.length}
+                    </p>
+                </div>
+
+                {/* Question Card */}
+                <div style={{ ...styles.card, background: '#F8FAFC', boxShadow: 'none', margin: 0, padding: '2rem 1rem', maxWidth: '100%', textAlign: 'center', minHeight: '200px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+                    <h3 style={{ fontSize: '1.35rem', fontWeight: 700, color: '#1E293B', marginBottom: '1.5rem' }}>{currentQuestion.label}</h3>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '1rem', width: '100%', maxHeight: '300px', overflowY: 'auto', padding: '0.5rem' }}>
+                        {currentQuestion.options.map((option, index) => {
+                            const isSelected = answers[currentQuestion.id] === option;
+                            return (
+                                <button
+                                    key={index}
+                                    onClick={() => handleAnswerChange(currentQuestion.id, option)}
+                                    style={{
+                                        ...styles.primaryButton,
+                                        background: isSelected ? 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)' : '#F3F4F6',
+                                        color: isSelected ? 'white' : '#1E293B',
+                                        border: isSelected ? '2px solid #3B82F6' : '1px solid #E5E7EB',
+                                        fontWeight: isSelected ? 700 : 600,
+                                        boxShadow: isSelected ? '0 4px 12px rgba(59, 130, 246, 0.15)' : 'none',
+                                        transition: 'all 0.2s',
+                                        minHeight: '48px',
+                                        padding: '0.75rem 1rem',
+                                    }}
+                                >
+                                    {option}
+                                </button>
+                            );
+                        })}
+                    </div>
+                </div>
+
+                {error && <p style={styles.error}>{error}</p>}
+
+                {/* Navigation Buttons */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', gap: '1rem', marginTop: 0 }}>
+                    {currentPage > 0 && (
                         <button
-                            key={index}
-                            onClick={() => handleAnswerChange(currentQuestion.id, option)}
-                            style={{
-                                ...styles.button, // Assuming a base button style exists
-                                backgroundColor: answers[currentQuestion.id] === option ? '#4CAF50' : '#f3f4f6',
-                                color: answers[currentQuestion.id] === option ? 'white' : '#374151',
-                                border: `1px solid ${answers[currentQuestion.id] === option ? '#4CAF50' : '#d1d5db'}`,
-                                padding: '0.75rem 1.5rem',
-                                borderRadius: '0.5rem',
-                                cursor: 'pointer',
-                                transition: 'all 0.3s ease',
-                                '&:hover': {
-                                    backgroundColor: answers[currentQuestion.id] === option ? '#4CAF50' : '#e5e7eb',
-                                },
-                            }}
+                            onClick={handlePrevious}
+                            style={{ ...styles.primaryButton, maxWidth: '120px', background: '#F3F4F6', color: '#1E293B', border: '1px solid #E5E7EB' }}
                         >
-                            {option}
+                            Anterior
                         </button>
-                    ))}
+                    )}
+                    {currentPage < questions.length - 1 ? (
+                        <button
+                            onClick={handleNext}
+                            style={{ ...styles.primaryButton, maxWidth: '120px', marginLeft: 'auto' }}
+                        >
+                            Siguiente
+                        </button>
+                    ) : (
+                        <button
+                            onClick={handleSubmit}
+                            disabled={isLoading}
+                            style={{ ...styles.primaryButton, width: '180px', margin: '0 auto', background: 'linear-gradient(135deg, #10B981 0%, #3B82F6 100%)', color: 'white', fontWeight: 700 }}
+                        >
+                            {isLoading ? 'Guardando...' : '¡Listo! Llévame a la App'}
+                        </button>
+                    )}
                 </div>
-            </div>
-
-            {error && <p style={styles.error}>{error}</p>}
-
-            <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', marginTop: '2rem', gap: '1rem' }}>
-                {currentPage > 0 && (
-                    <button onClick={handlePrevious} className="btn btn-secondary" style={{ maxWidth: '100px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                        Anterior
-                    </button>
-                )}
-                {currentPage < questions.length - 1 ? (
-                    <button onClick={handleNext} className="btn btn-primary" style={{ marginLeft: 'auto', maxWidth: '100px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                        Siguiente
-                    </button>
-                ) : (
-                    <button onClick={handleSubmit} disabled={isLoading} className="btn btn-primary" style={{ width: '180px', margin: '0 auto' }}>
-                        {isLoading ? 'Guardando...' : '¡Listo! Llevame a la App'}
-                    </button>
-                )}
             </div>
         </div>
     );

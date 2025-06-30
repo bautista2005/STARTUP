@@ -66,13 +66,19 @@ function MainView(props) {
     const isFree = user && user.plan === 'free';
 
     return (
-        <div className="fade-in">
+        <div className="fade-in" style={{ minHeight: '100vh', backgroundColor: '#F8FAFC' }}>
+            {/* Enhanced Header */}
             <header style={styles.mainHeader}>
                 <div>
                     <h1 style={styles.header}>Hola, {user?.username}</h1>
                     <p style={styles.subtitle}>Tu pronóstico personalizado</p>
                 </div>
-                <div style={{display: 'flex', alignItems: 'center', gap: '1rem'}}>
+                <div className="header-content" style={{
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '1rem',
+                    flexWrap: 'wrap'
+                }}>
                     {/* Muestra la etiqueta del plan actual del usuario  */}
                     <PlanTag plan={user?.plan} />
 
@@ -89,12 +95,24 @@ function MainView(props) {
                 </div>
             </header>
 
+            {/* Enhanced Main Content Layout */}
             <div style={styles.mainContentWrapper}>
-                <div style={{display: 'flex', gap: '2rem', alignItems: 'flex-start'}}>
+                <div className="main-grid" style={{
+                    display: 'grid',
+                    gridTemplateColumns: '1fr 350px',
+                    gap: '2rem',
+                    alignItems: 'flex-start',
+                    maxWidth: '1400px',
+                    margin: '0 auto',
+                    padding: '0 2rem'
+                }}>
+                    {/* Main Content Area */}
                     <div style={styles.mainContentArea}>
+                        {/* Search Card */}
                         <div style={styles.card}>
+                            <h3 style={styles.cardTitle}>Buscar Clima</h3>
                             {/* Sección de búsqueda de ciudad  */}
-                            <div style={styles.searchSection}>
+                            <div className="search-section" style={styles.searchSection}>
                                 <input
                                     type="text"
                                     value={ciudad}
@@ -105,17 +123,31 @@ function MainView(props) {
                                 <button
                                     onClick={handleBuscarClima}
                                     className="btn btn-primary"
-                                    style={{ flexShrink: 0 }} // Prevent button from shrinking
+                                    style={{ 
+                                        flexShrink: 0,
+                                        minWidth: '120px',
+                                        height: '56px'
+                                    }}
                                     // Deshabilita los botones si alguna de las operaciones de IA está en curso
                                     disabled={isLoading || isAdviceLoading || isAiOutfitLoading}
                                 >
-                                    Buscar
+                                    {isLoading ? 'Buscando...' : 'Buscar'}
                                 </button>
                             </div>
                         </div>
 
                         {/* Mensajes de carga y error para la búsqueda de clima */}
-                        {isLoading && !clima && <p style={{textAlign: 'center', marginTop: '2rem', color: '#6b7280'}}>Buscando clima...</p>}
+                        {isLoading && !clima && (
+                            <div style={{
+                                textAlign: 'center', 
+                                marginTop: '2rem', 
+                                color: '#64748B',
+                                fontSize: '1.125rem',
+                                fontWeight: 500
+                            }}>
+                                🔍 Buscando clima...
+                            </div>
+                        )}
                         {error && !clima && <p style={styles.error}>{error}</p>}
 
                         {/* Muestra la tarjeta del clima si hay datos  */}
@@ -127,26 +159,56 @@ function MainView(props) {
                         />}
 
                         {/* --- NUEVA SECCIÓN: CONSEJO DE VESTIMENTA CON IMÁGENES (PREMIUM/PRO) --- */}
-                        <div className="fade-in" style={styles.card}>
-                            <h3 style={styles.premiumCardTitle}>Consejo de Vestimenta con IA {isPremium && <span style={styles.proTag}>Premium</span>}</h3>
+                        <div className="fade-in card-hover" style={styles.card}>
+                            <h3 style={styles.premiumCardTitle}>
+                                Consejo de Vestimenta con IA 
+                                {isPremium && <span style={styles.proTag}>Premium</span>}
+                            </h3>
+                            
+                            {/* Usage Information */}
                             {isFree && user.ai_outfit_uses < 3 && (
-                                <p style={{color: '#6b7280', fontSize: '0.9rem', marginBottom: '1rem', textAlign: 'center'}}>
-                                    Te quedan {3 - user.ai_outfit_uses} usos gratuitos. ¡Actualiza a Premium para usos ilimitados!
-                                </p>
+                                <div style={{
+                                    backgroundColor: '#FEF3C7',
+                                    color: '#92400E',
+                                    padding: '1rem',
+                                    borderRadius: '0.75rem',
+                                    marginBottom: '1.5rem',
+                                    textAlign: 'center',
+                                    border: '1px solid #FDE68A',
+                                    fontWeight: 500
+                                }}>
+                                    🎯 Te quedan {3 - user.ai_outfit_uses} usos gratuitos. ¡Actualiza a Premium para usos ilimitados!
+                                </div>
                             )}
                             {isFree && user.ai_outfit_uses >= 3 && (
-                                <p style={{color: '#6B7280', fontSize: '0.9rem', marginBottom: '1rem', textAlign: 'center'}}>
-                                    Has agotado tus usos gratuitos. ¡Actualiza a Premium para usos ilimitados!
-                                </p>
+                                <div style={{
+                                    backgroundColor: '#FEE2E2',
+                                    color: '#991B1B',
+                                    padding: '1rem',
+                                    borderRadius: '0.75rem',
+                                    marginBottom: '1.5rem',
+                                    textAlign: 'center',
+                                    border: '1px solid #FCA5A5',
+                                    fontWeight: 500
+                                }}>
+                                    ⚠️ Has agotado tus usos gratuitos. ¡Actualiza a Premium para usos ilimitados!
+                                </div>
                             )}
                             {!isFree && (
-                                <p style={{color: '#6b7280', fontSize: '0.9rem', marginBottom: '1rem', textAlign: 'center'}}>
-                                    Sube fotos de tu ropa y elige una ciudad para obtener recomendaciones personalizadas basadas en el clima.
+                                <p style={{
+                                    color: '#64748B', 
+                                    fontSize: '1rem', 
+                                    marginBottom: '1.5rem', 
+                                    textAlign: 'center',
+                                    lineHeight: '1.6'
+                                }}>
+                                    📸 Sube fotos de tu ropa y elige una ciudad para obtener recomendaciones personalizadas basadas en el clima.
                                 </p>
                             )}
 
                             {/* --- NUEVO: Input para la ciudad del outfit --- */}
-                            <div style={{ width: '100%', marginBottom: '1rem' }}>
+                            <div style={{ width: '100%', marginBottom: '1.5rem' }}>
+                                <label style={styles.inputLabel}>Ciudad para el consejo</label>
                                 <input
                                     type="text"
                                     value={outfitCity}
@@ -157,22 +219,33 @@ function MainView(props) {
                                 />
                             </div>
 
-                            {/* Input para seleccionar archivos de imagen  */}
-                            <input
-                                type="file"
-                                multiple // Permite seleccionar múltiples archivos
-                                accept="image/*" // Solo acepta archivos de imagen
-                                onChange={handleFileChange} // Llama a la función al cambiar la selección de archivos
-                                style={{...styles.fileInput, width: '100%'}} // Aplica estilos para el input de archivo
-                                disabled={isAiOutfitLoading || (isFree && user.ai_outfit_uses >= 3)}
-                                ref={fileInputRef} // --- NUEVO: Asignar la referencia
-                            />
-                            {/* Muestra los nombres de los archivos seleccionados */}
-                            {selectedFiles.length > 0 && (
-                                <div style={{marginTop: '0.5rem', fontSize: '0.9rem', color: '#4b5563'}}>
-                                    Archivos seleccionados: {selectedFiles.map(file => file.name).join(', ')}
-                                </div>
-                            )}
+                            {/* File Upload Section */}
+                            <div style={{ width: '100%', marginBottom: '1.5rem' }}>
+                                <label style={styles.inputLabel}>Fotos de tu ropa</label>
+                                <input
+                                    type="file"
+                                    multiple // Permite seleccionar múltiples archivos
+                                    accept="image/*" // Solo acepta archivos de imagen
+                                    onChange={handleFileChange} // Llama a la función al cambiar la selección de archivos
+                                    style={{...styles.fileInput, width: '100%'}} // Aplica estilos para el input de archivo
+                                    disabled={isAiOutfitLoading || (isFree && user.ai_outfit_uses >= 3)}
+                                    ref={fileInputRef} // --- NUEVO: Asignar la referencia
+                                />
+                                {/* Muestra los nombres de los archivos seleccionados */}
+                                {selectedFiles.length > 0 && (
+                                    <div style={{
+                                        marginTop: '0.75rem', 
+                                        fontSize: '0.875rem', 
+                                        color: '#64748B',
+                                        backgroundColor: '#F1F5F9',
+                                        padding: '0.75rem',
+                                        borderRadius: '0.5rem',
+                                        border: '1px solid #E2E8F0'
+                                    }}>
+                                        📁 Archivos seleccionados: {selectedFiles.map(file => file.name).join(', ')}
+                                    </div>
+                                )}
+                            </div>
 
                             {/* Botón para generar el consejo de IA con imágenes */}
                             <button
@@ -191,7 +264,7 @@ function MainView(props) {
 
                             {/* Muestra el consejo de vestimenta si ya se generó */}
                             {aiOutfitConsejo && (
-                                <div className="fade-in" style={{...styles.aiAdvice, marginTop: '1.5rem'}}>
+                                <div className="fade-in" style={{...styles.aiAdvice, marginTop: '2rem'}}>
                                     <div style={styles.aiAdviceIconContainer}>
                                         <RobotIcon />
                                     </div>
@@ -211,8 +284,8 @@ function MainView(props) {
                             )}
 
                             {isFree && user.ai_outfit_uses >= 3 && (
-                                <button onClick={() => setView('pricing')} style={{...styles.upgradeButton, marginTop: '1rem', width: 'auto'}}>
-                                    <StarIcon /> Ver Planes
+                                <button onClick={() => setView('pricing')} style={{...styles.upgradeButton, marginTop: '1.5rem', width: '100%'}}>
+                                    <StarIcon /> Ver Planes Premium
                                 </button>
                             )}
                         </div>
@@ -232,13 +305,15 @@ function MainView(props) {
                         {/* --- FIN NUEVA SECCIÓN --- */}
                     </div>
 
-                    {/* Columna derecha para el historial de búsquedas  */}
-                    <div style={{ 
+                    {/* Enhanced History Sidebar */}
+                    <div className="history-sidebar" style={{ 
                         ...styles.card, 
                         ...styles.historyCard, 
-                        width: '300px', 
+                        width: '100%', 
                         opacity: '1',
                         pointerEvents: 'auto',
+                        position: 'sticky',
+                        top: '2rem'
                     }}>
                         <HistoryList 
                             user={user} 

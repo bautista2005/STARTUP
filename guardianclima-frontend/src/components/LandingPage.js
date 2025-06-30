@@ -58,9 +58,9 @@ function NavLink({ href, children, onClick, isButton }) {
         <a 
             href={href}
             style={finalStyle}
-            onClick={onClick}
             onMouseEnter={() => setHover(true)}
             onMouseLeave={() => setHover(false)}
+            {...(isButton ? { onClick } : {})}
         >
             {children}
             {!isButton && <span style={underlineStyle}></span>}
@@ -102,22 +102,22 @@ export function SharedNav({ onNavigateToAuth }) {
 const landingPageStyles = {
     navbar: {
         backgroundColor: '#FFFFFF',
-        borderBottom: '1px solid #E5E7EB',
         position: 'fixed',
-        width: '100%',
         top: 0,
         left: 0,
         right: 0,
+        width: '100%',
         zIndex: 1000,
         boxSizing: 'border-box',
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
+        borderBottom: '1px solid #E5E7EB',
     },
     navbarContent: {
         maxWidth: '1200px',
         width: '100%',
-        padding: '1rem 2rem', // Reduced vertical padding
+        padding: '1rem 2rem', // Original vertical padding
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
@@ -140,64 +140,126 @@ const landingPageStyles = {
         display: 'flex',
         gap: '3rem',
     },
+    // Completely redesigned professional hero section
     hero: {
-        background: 'linear-gradient(135deg, #F9FAFB 0%, #E5E7EB 100%)', // Subtle gradient
-        color: '#1F2937',
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)',
+        backgroundSize: '400% 400%',
+        color: '#FFFFFF',
         textAlign: 'center',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
         width: '100%',
-        minHeight: '100vh', // Full viewport height
-        padding: '6rem 2rem',
+        minHeight: '100vh',
+        padding: '8rem 2rem 6rem 2rem',
+        position: 'relative',
+        overflow: 'hidden',
+    },
+    heroOverlay: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        background: 'radial-gradient(circle at 30% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%), radial-gradient(circle at 70% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%)',
+        pointerEvents: 'none',
     },
     heroContent: {
         padding: '0 2rem',
-        maxWidth: '800px', // Adjusted max-width
+        maxWidth: '1000px',
         width: '100%',
         textAlign: 'center',
+        position: 'relative',
+        zIndex: 2,
     },
     heroAppName: {
-        fontSize: '4rem', // Larger font size
-        fontWeight: '900', // Bolder
-        color: '#1F2937',
-        marginBottom: '1.5rem',
-        letterSpacing: '-0.05em', // Tighter letter spacing
+        fontSize: '5rem',
+        fontWeight: '900',
+        background: 'linear-gradient(135deg, #FFFFFF 0%, #F8FAFC 100%)',
+        backgroundClip: 'text',
+        WebkitBackgroundClip: 'text',
+        WebkitTextFillColor: 'transparent',
+        marginBottom: '2rem',
+        letterSpacing: '-0.05em',
+        textShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+        lineHeight: '1.1',
     },
     heroTagline: {
-        fontSize: '1.75rem', // Larger font size
-        fontWeight: '600', // Bolder
-        marginBottom: '2.5rem',
-        lineHeight: '1.5',
-        color: '#4B5568',
-        maxWidth: '700px',
-        margin: '0 auto 2.5rem auto',
+        fontSize: '2.25rem',
+        fontWeight: '700',
+        marginBottom: '2rem',
+        lineHeight: '1.3',
+        color: '#F1F5F9',
+        maxWidth: '800px',
+        margin: '0 auto 2rem auto',
+        textShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
     },
     heroSubtitle: {
-        fontSize: '1.25rem', // Larger font size
-        color: '#6B7280',
-        marginBottom: '3rem',
+        fontSize: '1.375rem',
+        color: '#E2E8F0',
+        marginBottom: '3.5rem',
         lineHeight: '1.7',
-        maxWidth: '700px',
-        margin: '0 auto 3rem auto',
+        maxWidth: '750px',
+        margin: '0 auto 3.5rem auto',
+        fontWeight: '500',
     },
     ctaButton: {
-        backgroundColor: '#3B82F6',
+        background: 'linear-gradient(135deg, #FFFFFF 0%, #F8FAFC 100%)',
+        color: '#1E40AF',
+        padding: '1.5rem 3.5rem',
+        fontSize: '1.25rem',
+        fontWeight: '700',
+        border: 'none',
+        borderRadius: '1rem',
+        cursor: 'pointer',
+        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+        transition: 'all 0.3s ease-in-out',
+        position: 'relative',
+        overflow: 'hidden',
+        '&:hover': {
+            transform: 'translateY(-3px)',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+            background: 'linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 100%)',
+        },
+        '&::before': {
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            left: '-100%',
+            width: '100%',
+            height: '100%',
+            background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent)',
+            transition: 'left 0.5s',
+        },
+        '&:hover::before': {
+            left: '100%',
+        },
+    },
+    heroStats: {
+        display: 'flex',
+        justifyContent: 'center',
+        gap: '4rem',
+        marginTop: '4rem',
+        flexWrap: 'wrap',
+    },
+    statItem: {
+        textAlign: 'center',
+        color: '#F1F5F9',
+    },
+    statNumber: {
+        fontSize: '2.5rem',
+        fontWeight: '800',
         color: '#FFFFFF',
-        padding: '1rem 2.5rem',
+        marginBottom: '0.5rem',
+        textShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+    },
+    statLabel: {
         fontSize: '1rem',
         fontWeight: '600',
-        border: 'none',
-        borderRadius: '0.5rem',
-        cursor: 'pointer',
-        boxShadow: '0 4px 6px rgba(59, 130, 246, 0.1)',
-        transition: 'all 0.3s ease-in-out',
-        '&:hover': {
-            backgroundColor: '#2563EB',
-            transform: 'translateY(-2px)',
-            boxShadow: '0 6px 12px rgba(59, 130, 246, 0.15)',
-        },
+        color: '#E2E8F0',
+        textTransform: 'uppercase',
+        letterSpacing: '0.05em',
     },
     section: {
         textAlign: 'center',
@@ -281,87 +343,130 @@ function LandingPage({ onNavigateToAuth, handleUpgrade, currentUserPlan }) {
         });
     };
 
+    // Gradient background for hero and area above navbar
+    const heroGradientBg = {
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)',
+        backgroundSize: '400% 400%',
+        minHeight: '100vh',
+        width: '100%',
+        position: 'relative',
+        padding: 0,
+        margin: 0,
+    };
+
     return (
         <div id="landing-page-scroll-container" style={{ fontFamily: styles.appWrapper.fontFamily, color: '#333', backgroundColor: styles.appWrapper.backgroundColor, width: '100%' }}>
-            <div style={landingPageStyles.mainContentWrapper}>
+            <div style={heroGradientBg}>
+                <nav style={landingPageStyles.navbar}>
+                    <div style={landingPageStyles.navbarContent}>
+                        <button onClick={(e) => handleNavLinkClick(e, 'hero')} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+                            <LogoIcon />
+                        </button>
+                        <div style={landingPageStyles.navLinksWrapper}>
+                            <ul style={landingPageStyles.navLinks}>
+                                <li><NavLink href="#features" onClick={(e) => handleNavLinkClick(e, 'features')}>Características</NavLink></li>
+                                <li><NavLink href="#pricing" onClick={(e) => handleNavLinkClick(e, 'pricing')}>Precios</NavLink></li>
+                                <li><NavLink href="#contact" onClick={(e) => handleNavLinkClick(e, 'contact')}>Contacto</NavLink></li>
+                            </ul>
+                        </div>
+                        <NavLink href="#" onClick={() => onNavigateToAuth('auth')} isButton>Iniciar Sesión</NavLink>
+                    </div>
+                </nav>
                 {/* Hero Section */}
-                <section id="hero" style={landingPageStyles.hero}>
+                <section id="hero" style={{ ...landingPageStyles.hero, paddingTop: '7.5rem' }}>
+                    <div style={landingPageStyles.heroOverlay}></div>
                     <div style={landingPageStyles.heroContent}>
                         <h1 style={landingPageStyles.heroAppName}>Guardián Clima</h1>
-                        <h3 style={landingPageStyles.heroTagline}>Tu Pronóstico del Tiempo, Elevado a un Nuevo Nivel</h3>
-                        <p style={landingPageStyles.heroSubtitle}>Guardián Clima no solo te dice si lloverá, sino que te prepara para ello con consejos de vestimenta y asistencia de viaje impulsados por IA.</p>
+                        <h3 style={landingPageStyles.heroTagline}>
+                            Tu Pronóstico del Tiempo, Elevado a un Nuevo Nivel
+                        </h3>
+                        <p style={landingPageStyles.heroSubtitle}>
+                            Guardián Clima no solo te dice si lloverá, sino que te prepara para ello con consejos de vestimenta 
+                            y asistencia de viaje impulsados por IA.
+                        </p>
                         <button onClick={() => onNavigateToAuth('auth')} style={landingPageStyles.ctaButton}>
-                            Empieza Gratis
+                            🚀 Empieza Gratis
                         </button>
-                    </div>
-                </section>
-
-                {/* Features Section */}
-                <section id="features" style={landingPageStyles.section}>
-                    <div style={landingPageStyles.sectionContent}>
-                        <h2 style={landingPageStyles.sectionTitle}>Funcionalidades Clave</h2>
-                        <div style={landingPageStyles.featuresGrid}>
-                            <div style={landingPageStyles.featureCard}>
-                            <CloudSunIcon />
-                            <h3 style={landingPageStyles.featureTitle}>Pronósticos Precisos</h3>
-                            <p style={landingPageStyles.featureDescription}>Obtén datos meteorológicos detallados y confiables para cualquier ciudad del mundo al instante.</p>
-                        </div>
-                        <div style={landingPageStyles.featureCard}>
-                            <RobotIcon />
-                            <h3 style={landingPageStyles.featureTitle}>Consejos de Vestimenta con IA <span style={styles.proTag}>Premium</span></h3>
-                            <p style={landingPageStyles.featureDescription}>Sube fotos de tu ropa y recibe recomendaciones sobre qué ponerte según el clima de tu destino.</p>
-                        </div>
-                        <div style={landingPageStyles.featureCard}>
-                            <RobotIcon />
-                            <h3 style={landingPageStyles.featureTitle}>Asistente de Viaje Inteligente <span style={styles.proTag}>Premium</span></h3>
-                            <p style={landingPageStyles.featureDescription}>Planifica tus viajes con la ayuda de nuestra IA, que te dará consejos sobre qué empacar y qué esperar del clima.</p>
-                        </div>
-                        </div>
-                    </div>
-                </section>
-
-                {/* Pricing Section */}
-                <section id="pricing" style={{ ...landingPageStyles.section, ...landingPageStyles.pricingSection }}>
-                    <div style={landingPageStyles.sectionContent}>
-                        <h2 style={landingPageStyles.sectionTitle}>Elige el Plan Perfecto Para Ti</h2>
-                        <div style={{ display: 'flex', justifyContent: 'center', gap: '2rem', maxWidth: '1200px', margin: '0 auto' }}>
-                            <div style={{ flex: 1, maxWidth: '400px' }}>
-                                <PlanCard
-                                    plan={plans[0]}
-                                    handleUpgrade={handleUpgrade}
-                                    isCurrentUserPlan={plans[0].id === currentUserPlan}
-                                    onSelectPlan={() => onNavigateToAuth('auth')}
-                                />
+                        {/* Professional Stats */}
+                        <div style={landingPageStyles.heroStats}>
+                            <div style={landingPageStyles.statItem}>
+                                <div style={landingPageStyles.statNumber}>10K+</div>
+                                <div style={landingPageStyles.statLabel}>Usuarios Activos</div>
                             </div>
-                            <div style={{ flex: 1, maxWidth: '400px' }}>
-                                <PlanCard
-                                    plan={plans[1]}
-                                    popular={true}
-                                    handleUpgrade={handleUpgrade}
-                                    isCurrentUserPlan={plans[1].id === currentUserPlan}
-                                    onSelectPlan={() => onNavigateToAuth('auth')}
-                                />
+                            <div style={landingPageStyles.statItem}>
+                                <div style={landingPageStyles.statNumber}>99.9%</div>
+                                <div style={landingPageStyles.statLabel}>Precisión</div>
+                            </div>
+                            <div style={landingPageStyles.statItem}>
+                                <div style={landingPageStyles.statNumber}>24/7</div>
+                                <div style={landingPageStyles.statLabel}>Disponibilidad</div>
                             </div>
                         </div>
                     </div>
                 </section>
-
-                {/* Contact Section */}
-                <section id="contact" style={{ ...landingPageStyles.section, ...landingPageStyles.contactSection }}>
-                    <div style={landingPageStyles.sectionContent}>
-                        <h2 style={landingPageStyles.sectionTitle}>¿Tienes Preguntas?</h2>
-                        <p style={{ ...styles.subtitle, maxWidth: '500px', margin: '0 auto 2rem auto' }}>Estamos aquí para ayudarte. Contáctanos para cualquier consulta o sugerencia.</p>
-                        <a href="mailto:contacto@guardianclima.com" style={landingPageStyles.ctaButton}>
-                            Enviar un Email
-                        </a>
-                    </div>
-                </section>
-
-                {/* Footer */}
-                <footer style={landingPageStyles.footer}>
-                    <p>&copy; {new Date().getFullYear()} Guardián Clima. Todos los derechos reservados.</p>
-                </footer>
             </div>
+            {/* Features Section */}
+            <section id="features" style={landingPageStyles.section}>
+                <div style={landingPageStyles.sectionContent}>
+                    <h2 style={landingPageStyles.sectionTitle}>Funcionalidades Clave</h2>
+                    <div style={landingPageStyles.featuresGrid}>
+                        <div style={landingPageStyles.featureCard}>
+                        <CloudSunIcon />
+                        <h3 style={landingPageStyles.featureTitle}>Pronósticos Precisos</h3>
+                        <p style={landingPageStyles.featureDescription}>Obtén datos meteorológicos detallados y confiables para cualquier ciudad del mundo al instante.</p>
+                    </div>
+                    <div style={landingPageStyles.featureCard}>
+                        <RobotIcon />
+                        <h3 style={landingPageStyles.featureTitle}>Consejos de Vestimenta con IA <span style={styles.proTag}>Premium</span></h3>
+                        <p style={landingPageStyles.featureDescription}>Sube fotos de tu ropa y recibe recomendaciones sobre qué ponerte según el clima de tu destino.</p>
+                    </div>
+                    <div style={landingPageStyles.featureCard}>
+                        <RobotIcon />
+                        <h3 style={landingPageStyles.featureTitle}>Asistente de Viaje Inteligente <span style={styles.proTag}>Premium</span></h3>
+                        <p style={landingPageStyles.featureDescription}>Planifica tus viajes con la ayuda de nuestra IA, que te dará consejos sobre qué empacar y qué esperar del clima.</p>
+                    </div>
+                    </div>
+                </div>
+            </section>
+            {/* Pricing Section */}
+            <section id="pricing" style={{ ...landingPageStyles.section, ...landingPageStyles.pricingSection }}>
+                <div style={landingPageStyles.sectionContent}>
+                    <h2 style={landingPageStyles.sectionTitle}>Elige el Plan Perfecto Para Ti</h2>
+                    <div style={{ display: 'flex', justifyContent: 'center', gap: '2rem', maxWidth: '1200px', margin: '0 auto' }}>
+                        <div style={{ flex: 1, maxWidth: '400px' }}>
+                            <PlanCard
+                                plan={plans[0]}
+                                handleUpgrade={handleUpgrade}
+                                isCurrentUserPlan={plans[0].id === currentUserPlan}
+                                onSelectPlan={() => onNavigateToAuth('auth')}
+                            />
+                        </div>
+                        <div style={{ flex: 1, maxWidth: '400px' }}>
+                            <PlanCard
+                                plan={plans[1]}
+                                popular={true}
+                                handleUpgrade={handleUpgrade}
+                                isCurrentUserPlan={plans[1].id === currentUserPlan}
+                                onSelectPlan={() => onNavigateToAuth('auth')}
+                            />
+                        </div>
+                    </div>
+                </div>
+            </section>
+            {/* Contact Section */}
+            <section id="contact" style={{ ...landingPageStyles.section, ...landingPageStyles.contactSection }}>
+                <div style={landingPageStyles.sectionContent}>
+                    <h2 style={landingPageStyles.sectionTitle}>¿Tienes Preguntas?</h2>
+                    <p style={{ ...styles.subtitle, maxWidth: '500px', margin: '0 auto 2rem auto' }}>Estamos aquí para ayudarte. Contáctanos para cualquier consulta o sugerencia.</p>
+                    <a href="mailto:contacto@guardianclima.com" style={landingPageStyles.ctaButton}>
+                        Enviar un Email
+                    </a>
+                </div>
+            </section>
+            {/* Footer */}
+            <footer style={landingPageStyles.footer}>
+                <p>&copy; {new Date().getFullYear()} Guardián Clima. Todos los derechos reservados.</p>
+            </footer>
         </div>
     );
 }

@@ -48,6 +48,11 @@ class Users(db.Model):
     colores_preferidos = db.Column(db.String(100), default='Neutros')
     preferencia_clima = db.Column(db.String(50), default='Templado')
     frecuencia_viajes = db.Column(db.String(50), default='Ocasional')
+    # NUEVOS CAMPOS
+    tipo_calzado = db.Column(db.String(50), default='Deportivo')
+    frecuencia_ejercicio = db.Column(db.String(50), default='Ocasional')
+    preferencia_tejido = db.Column(db.String(50), default='Algodón')
+    prenda_favorita = db.Column(db.String(50), default='Camiseta')
     preferencias_guardadas = db.Column(db.Boolean, default=False)
     ai_outfit_uses = db.Column(db.Integer, default=0)
     ai_travel_uses = db.Column(db.Integer, default=0)
@@ -254,7 +259,7 @@ def get_ai_outfit():
         humedad = datos_clima['main']['humidity']
 
         prompt = (
-        f"""
+            f"""
             Basándote en las prendas identificadas en las imágenes, 
             el clima actual en {ciudad} 
             (Temperatura: {temperatura}°C, 
@@ -266,7 +271,11 @@ def get_ai_outfit():
             Sensibilidad al frío: {user.sensibilidad_frio}, 
             Colores Preferidos: {user.colores_preferidos}, 
             Preferencia de Clima: {user.preferencia_clima}, 
-            Frecuencia de Viajes: {user.frecuencia_viajes}), 
+            Frecuencia de Viajes: {user.frecuencia_viajes},
+            Tipo de Calzado Preferido: {user.tipo_calzado},
+            Frecuencia de Ejercicio Físico: {user.frecuencia_ejercicio},
+            Preferencia de Tejidos: {user.preferencia_tejido},
+            Prenda Favorita: {user.prenda_favorita}),
             genera una recomendación de vestimenta estructurada 
 
             Tu recomendación debe incluir las siguientes secciones:
@@ -279,7 +288,7 @@ def get_ai_outfit():
             Para cada prenda o accesorio sugerido, incluye una descripción muy breve de sus características 
             (ej. 'camiseta blanca de algodón', 'pantalón vaquero oscuro', 'zapatillas deportivas') para que el usuario pueda identificarla en sus fotos. 
             Enfócate en un atuendo práctico y con estilo. NO USES LETRAS NEGRITAS, ASTERISCOS, NI HTML TAGS.
-        """
+            """
         )
 
 
@@ -337,7 +346,11 @@ def get_ai_advice(ciudad):
             f"Sensibilidad al frío: '{user.sensibilidad_frio}', "
             f"Colores preferidos: '{user.colores_preferidos}', "
             f"Preferencia de clima: '{user.preferencia_clima}', "
-            f"Frecuencia de viajes: '{user.frecuencia_viajes}'.\n"
+            f"Frecuencia de viajes: '{user.frecuencia_viajes}', "
+            f"Tipo de calzado preferido: '{user.tipo_calzado}', "
+            f"Frecuencia de ejercicio físico: '{user.frecuencia_ejercicio}', "
+            f"Preferencia de tejidos: '{user.preferencia_tejido}', "
+            f"Prenda favorita: '{user.prenda_favorita}'.\n"
             f"El clima actual es: Condición: {descripcion}, Temperatura: {temperatura}°C, "
             f"Sensación térmica: {sensacion_termica}°C, Humedad: {humedad}%.\n"
             f"Basado en TODA esta información (preferencias del usuario Y el clima), "
@@ -432,33 +445,30 @@ def get_ai_travel_advice():
 
         # 3. Construir el prompt para la IA
         prompt = (
-            f"""
-            Actúa como un asistente de viaje experto y conciso. Tu tarea es crear una lista de equipaje inteligente y detallada.
-            
-            Destino: {ciudad_destino}
-            Fechas del viaje: del {fecha_inicio_str} al {fecha_fin_str}
-            
-            Preferencias del usuario:
-            - Estilo preferido: {user.estilo_preferido}
-            - Actividad principal planeada: {user.actividad_principal}
-            - Sensibilidad al frío: {user.sensibilidad_frio}
-            - Colores preferidos: {user.colores_preferidos}
-            - Preferencia de clima: {user.preferencia_clima}
-            - Frecuencia de viajes: {user.frecuencia_viajes}
-            
-            Clima actual en {ciudad_destino}:
-            Temperatura: {temperatura}°C
-            Sensación térmica: {sensacion_termica}°C
-            Humedad: {humedad}%
-            Descripción del clima: {descripcion}
-            
-            Basándote en toda esta información, genera una lista de equipaje organizada por categorías (ej. Ropa, Calzado, Accesorios, Artículos de Aseo, Documentos). 
-            Para cada prenda o artículo, sé específico (ej. '2 camisetas de algodón de manga corta', '1 par de zapatillas cómodas para caminar', '1 chaqueta impermeable ligera').
-            Añade una sección final con 2 o 3 consejos prácticos para el viaje basados en el clima y el destino.
-            
-            El resultado debe ser una lista fácil de leer y accionable para el usuario.
-            NO USES LETRAS NEGRITAS EN LAS RESPUESTAS, NO USES ASTERISCOS, NO USES HTML TAGS.
-            """
+            f"Actúa como un asistente de viaje experto y conciso. Tu tarea es crear una lista de equipaje inteligente y detallada.\n\n"
+            f"Destino: {ciudad_destino}\n"
+            f"Fechas del viaje: del {fecha_inicio_str} al {fecha_fin_str}\n\n"
+            f"Preferencias del usuario:\n"
+            f"- Estilo preferido: {user.estilo_preferido}\n"
+            f"- Actividad principal planeada: {user.actividad_principal}\n"
+            f"- Sensibilidad al frío: {user.sensibilidad_frio}\n"
+            f"- Colores preferidos: {user.colores_preferidos}\n"
+            f"- Preferencia de clima: {user.preferencia_clima}\n"
+            f"- Frecuencia de viajes: {user.frecuencia_viajes}\n"
+            f"- Tipo de calzado preferido: {user.tipo_calzado}\n"
+            f"- Frecuencia de ejercicio físico: {user.frecuencia_ejercicio}\n"
+            f"- Preferencia de tejidos: {user.preferencia_tejido}\n"
+            f"- Prenda favorita: {user.prenda_favorita}\n\n"
+            f"Clima actual en {ciudad_destino}:\n"
+            f"Temperatura: {temperatura}°C\n"
+            f"Sensación térmica: {sensacion_termica}°C\n"
+            f"Humedad: {humedad}%\n"
+            f"Descripción del clima: {descripcion}\n\n"
+            f"Basándote en toda esta información, genera una lista de equipaje organizada por categorías (ej. Ropa, Calzado, Accesorios, Artículos de Aseo, Documentos). \n"
+            f"Para cada prenda o artículo, sé específico (ej. '2 camisetas de algodón de manga corta', '1 par de zapatillas cómodas para caminar', '1 chaqueta impermeable ligera').\n"
+            f"Añade una sección final con 2 o 3 consejos prácticos para el viaje basados en el clima y el destino.\n\n"
+            f"El resultado debe ser una lista fácil de leer y accionable para el usuario.\n"
+            f"NO USES LETRAS NEGRITAS EN LAS RESPUESTAS, NO USES ASTERISCOS, NO USES HTML TAGS.\n"
         )
 
         # 4. Generar y devolver la respuesta de la IA
