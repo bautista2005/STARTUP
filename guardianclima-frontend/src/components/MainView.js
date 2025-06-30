@@ -62,18 +62,19 @@ function MainView(props) {
     };
 
     // Función auxiliar para verificar si el usuario tiene un plan Premium o Pro 
-    const isPremiumOrPro = user && (user.plan === 'premium' || user.plan === 'pro');
+    const isPremium = user && user.plan === 'premium';
+    const isFree = user && user.plan === 'free';
 
     return (
         <div className="fade-in">
             <header style={styles.mainHeader}>
                 <div>
-                    <h1 style={styles.header}>Hola, {user.username}</h1>
+                    <h1 style={styles.header}>Hola, {user?.username}</h1>
                     <p style={styles.subtitle}>Tu pronóstico personalizado</p>
                 </div>
                 <div style={{display: 'flex', alignItems: 'center', gap: '1rem'}}>
                     {/* Muestra la etiqueta del plan actual del usuario  */}
-                    <PlanTag plan={user.plan} />
+                    <PlanTag plan={user?.plan} />
 
                     {/* Botón para gestionar el plan y acceder a la página de precios  */}
                     <button onClick={() => setView('pricing')} style={styles.upgradeButton}>
@@ -126,99 +127,106 @@ function MainView(props) {
                         />}
 
                         {/* --- NUEVA SECCIÓN: CONSEJO DE VESTIMENTA CON IMÁGENES (PREMIUM/PRO) --- */}
-                        {isPremiumOrPro ? (
-                            <div className="fade-in" style={styles.card}>
-                                <h3 style={styles.premiumCardTitle}>Consejo de Vestimenta con IA (Premium/Pro)</h3>
+                        <div className="fade-in" style={styles.card}>
+                            <h3 style={styles.premiumCardTitle}>Consejo de Vestimenta con IA {isPremium && <span style={styles.proTag}>Premium</span>}</h3>
+                            {isFree && user.ai_outfit_uses < 3 && (
+                                <p style={{color: '#6b7280', fontSize: '0.9rem', marginBottom: '1rem', textAlign: 'center'}}>
+                                    Te quedan {3 - user.ai_outfit_uses} usos gratuitos. ¡Actualiza a Premium para usos ilimitados!
+                                </p>
+                            )}
+                            {isFree && user.ai_outfit_uses >= 3 && (
+                                <p style={{color: '#6B7280', fontSize: '0.9rem', marginBottom: '1rem', textAlign: 'center'}}>
+                                    Has agotado tus usos gratuitos. ¡Actualiza a Premium para usos ilimitados!
+                                </p>
+                            )}
+                            {!isFree && (
                                 <p style={{color: '#6b7280', fontSize: '0.9rem', marginBottom: '1rem', textAlign: 'center'}}>
                                     Sube fotos de tu ropa y elige una ciudad para obtener recomendaciones personalizadas basadas en el clima.
                                 </p>
+                            )}
 
-                                {/* --- NUEVO: Input para la ciudad del outfit --- */}
-                                <div style={{ width: '100%', marginBottom: '1rem' }}>
-                                    <input
-                                        type="text"
-                                        value={outfitCity}
-                                        onChange={(e) => setOutfitCity(e.target.value)}
-                                        placeholder="Elige una ciudad para el consejo..."
-                                        style={{...styles.searchInput, width: '100%', boxSizing: 'border-box'}}
-                                        disabled={isAiOutfitLoading}
-                                    />
-                                </div>
-
-                                {/* Input para seleccionar archivos de imagen  */}
+                            {/* --- NUEVO: Input para la ciudad del outfit --- */}
+                            <div style={{ width: '100%', marginBottom: '1rem' }}>
                                 <input
-                                    type="file"
-                                    multiple // Permite seleccionar múltiples archivos
-                                    accept="image/*" // Solo acepta archivos de imagen
-                                    onChange={handleFileChange} // Llama a la función al cambiar la selección de archivos
-                                    style={{...styles.fileInput, width: '100%'}} // Aplica estilos para el input de archivo
-                                    disabled={isAiOutfitLoading}
-                                    ref={fileInputRef} // --- NUEVO: Asignar la referencia
+                                    type="text"
+                                    value={outfitCity}
+                                    onChange={(e) => setOutfitCity(e.target.value)}
+                                    placeholder="Elige una ciudad para el consejo..."
+                                    style={{...styles.searchInput, width: '100%', boxSizing: 'border-box'}}
+                                    disabled={isAiOutfitLoading || (isFree && user.ai_outfit_uses >= 3)}
                                 />
-                                {/* Muestra los nombres de los archivos seleccionados */}
-                                {selectedFiles.length > 0 && (
-                                    <div style={{marginTop: '0.5rem', fontSize: '0.9rem', color: '#4b5563'}}>
-                                        Archivos seleccionados: {selectedFiles.map(file => file.name).join(', ')}
-                                    </div>
-                                )}
-
-                                {/* Botón para generar el consejo de IA con imágenes */}
-                                <button
-                                    onClick={handleGenerateAiOutfit} // Llama a la función para enviar las imágenes y obtener el consejo
-                                    className="btn btn-gradient"
-                                    // Deshabilita el botón si está cargando, no hay archivos seleccionados o no se ha ingresado una ciudad
-                                    disabled={isAiOutfitLoading || selectedFiles.length === 0 || !outfitCity}
-                                    style={{...styles.aiButton, marginTop: '1rem', width: '100%'}}
-                                >
-                                    <WandIcon />
-                                    {isAiOutfitLoading ? 'Analizando Ropa...' : 'Generar Consejo de Vestimenta'}
-                                </button>
-
-                                {/* Muestra mensajes de error específicos para esta funcionalidad */}
-                                {aiOutfitError && <p style={styles.error}>{aiOutfitError}</p>}
-
-                                {/* Muestra el consejo de vestimenta si ya se generó */}
-                                {aiOutfitConsejo && (
-                                    <div className="fade-in" style={{...styles.aiAdvice, marginTop: '1.5rem'}}>
-                                        <div style={styles.aiAdviceIconContainer}>
-                                            <RobotIcon />
-                                        </div>
-                                        <div style={{ width: '100%', textAlign: 'center' }}>
-                                            <h4 style={styles.aiAdviceTitle}>Tu Outfit por Guardián IA</h4>
-                                            {/* Galería de imágenes subidas */}
-                                            {submittedImages.length > 0 && (
-                                                <div style={styles.imageGallery}>
-                                                    {submittedImages.map((image, index) => (
-                                                        <img key={index} src={image} alt={`prenda ${index + 1}`} style={styles.galleryImage} />
-                                                    ))}
-                                                </div>
-                                            )}
-                                            <p style={styles.aiAdviceText}>{aiOutfitConsejo}</p>
-                                        </div>
-                                    </div>
-                                )}
                             </div>
-                        ) : (
-                        // Mensaje para usuarios del plan gratuito 
-                        <div className="fade-in" style={{...styles.card, textAlign: 'center', padding: '1.5rem'}}>
-                                <h3 style={{...styles.cardTitle, color: '#3B82F6'}}>¡Función Exclusiva Premium/Pro!</h3>
-                                <p style={{color: '#6B7280'}}>
-                                    Desbloquea el consejo de vestimenta personalizado subiendo fotos de tu ropa. ¡Actualiza tu plan ahora! 
-                                </p>
+
+                            {/* Input para seleccionar archivos de imagen  */}
+                            <input
+                                type="file"
+                                multiple // Permite seleccionar múltiples archivos
+                                accept="image/*" // Solo acepta archivos de imagen
+                                onChange={handleFileChange} // Llama a la función al cambiar la selección de archivos
+                                style={{...styles.fileInput, width: '100%'}} // Aplica estilos para el input de archivo
+                                disabled={isAiOutfitLoading || (isFree && user.ai_outfit_uses >= 3)}
+                                ref={fileInputRef} // --- NUEVO: Asignar la referencia
+                            />
+                            {/* Muestra los nombres de los archivos seleccionados */}
+                            {selectedFiles.length > 0 && (
+                                <div style={{marginTop: '0.5rem', fontSize: '0.9rem', color: '#4b5563'}}>
+                                    Archivos seleccionados: {selectedFiles.map(file => file.name).join(', ')}
+                                </div>
+                            )}
+
+                            {/* Botón para generar el consejo de IA con imágenes */}
+                            <button
+                                onClick={handleGenerateAiOutfit} // Llama a la función para enviar las imágenes y obtener el consejo
+                                className="btn btn-gradient"
+                                // Deshabilita el botón si está cargando, no hay archivos seleccionados o no se ha ingresado una ciudad
+                                disabled={isAiOutfitLoading || selectedFiles.length === 0 || !outfitCity || (isFree && user.ai_outfit_uses >= 3)}
+                                style={{...styles.aiButton, marginTop: '1rem', width: '100%'}}
+                            >
+                                <WandIcon />
+                                {isAiOutfitLoading ? 'Analizando Ropa...' : 'Generar Consejo de Vestimenta'}
+                            </button>
+
+                            {/* Muestra mensajes de error específicos para esta funcionalidad */}
+                            {aiOutfitError && <p style={styles.error}>{aiOutfitError}</p>}
+
+                            {/* Muestra el consejo de vestimenta si ya se generó */}
+                            {aiOutfitConsejo && (
+                                <div className="fade-in" style={{...styles.aiAdvice, marginTop: '1.5rem'}}>
+                                    <div style={styles.aiAdviceIconContainer}>
+                                        <RobotIcon />
+                                    </div>
+                                    <div style={{ width: '100%', textAlign: 'center' }}>
+                                        <h4 style={styles.aiAdviceTitle}>Tu Outfit por Guardián IA</h4>
+                                        {/* Galería de imágenes subidas */}
+                                        {submittedImages.length > 0 && (
+                                            <div style={styles.imageGallery}>
+                                                {submittedImages.map((image, index) => (
+                                                    <img key={index} src={image} alt={`prenda ${index + 1}`} style={styles.galleryImage} />
+                                                ))}
+                                            </div>
+                                        )}
+                                        <p style={styles.aiAdviceText}>{aiOutfitConsejo}</p>
+                                    </div>
+                                </div>
+                            )}
+
+                            {isFree && user.ai_outfit_uses >= 3 && (
                                 <button onClick={() => setView('pricing')} style={{...styles.upgradeButton, marginTop: '1rem', width: 'auto'}}>
                                     <StarIcon /> Ver Planes
                                 </button>
-                            </div>
-                        )}
+                            )}
+                        </div>
                         {/* --- FIN NUEVA SECCIÓN --- */}
 
                         {/* --- NUEVA SECCIÓN: ASISTENTE DE VIAJE (PREMIUM/PRO) --- */}
-                        {isPremiumOrPro && (
+                        {user.plan === 'premium' && (
                             <TravelAssistant 
+                                user={user}
                                 handleGenerateTravelAdvice={handleGenerateTravelAdvice}
                                 isTravelLoading={isTravelLoading}
                                 travelAdvice={travelAdvice}
                                 travelError={travelError}
+                                setView={setView}
                             />
                         )}
                         {/* --- FIN NUEVA SECCIÓN --- */}
@@ -234,7 +242,7 @@ function MainView(props) {
                     }}>
                         <HistoryList 
                             user={user} 
-                            historial={user.plan === 'free' ? historial.slice(0, 5) : historial} 
+                            historial={user?.plan === 'free' ? historial.slice(0, 5) : historial} 
                         />
                     </div>
                 </div>

@@ -4,7 +4,7 @@ export const styles = {
     container: { width: '100%', maxWidth: '1200px', margin: '0 auto', padding: '0 2rem' },
     authContainer: {
         backgroundColor: '#FFFFFF',
-        padding: '3rem',
+        padding: '1rem 3rem',
         borderRadius: '1.5rem',
         boxShadow: '0 10px 25px rgba(0, 0, 0, 0.1)',
         textAlign: 'center',
@@ -13,7 +13,7 @@ export const styles = {
         alignItems: 'center',
         gap: '1.5rem',
         maxWidth: '400px',
-        margin: '2rem auto',
+        margin: '0 auto',
     },
     authTitle: {
         margin: '0 0 0.5rem 0',

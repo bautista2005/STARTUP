@@ -15,7 +15,7 @@ from google.genai import types
 import os
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv(override=True)
 
 # --- 1. Configuración Centralizada ---
 app = Flask(__name__)
@@ -45,7 +45,12 @@ class Users(db.Model):
     estilo_preferido = db.Column(db.String(50), default='Casual')
     actividad_principal = db.Column(db.String(50), default='Oficina')
     sensibilidad_frio = db.Column(db.String(50), default='Normal')
+    colores_preferidos = db.Column(db.String(100), default='Neutros')
+    preferencia_clima = db.Column(db.String(50), default='Templado')
+    frecuencia_viajes = db.Column(db.String(50), default='Ocasional')
     preferencias_guardadas = db.Column(db.Boolean, default=False)
+    ai_outfit_uses = db.Column(db.Integer, default=0)
+    ai_travel_uses = db.Column(db.Integer, default=0)
     # --- FIN DE NUEVOS CAMPOS ---
 
     def set_password(self, password):
@@ -70,7 +75,6 @@ with app.app_context():
 # --- 5. Carga de API Keys Externas ---
 MIowmAPI = os.getenv("WEATHER_API_KEY")
 geminiAPI = os.getenv("GEMINI_API_KEY")
-
 
 if geminiAPI:
     gemini_client = genai.Client(api_key=geminiAPI)
@@ -114,7 +118,9 @@ def login():
         additional_claims = {
             "plan": user.plan, 
             "username": user.username,
-            "prefs_saved": user.preferencias_guardadas # <-- ¡NUEVO!
+            "prefs_saved": user.preferencias_guardadas,
+            "ai_outfit_uses": user.ai_outfit_uses,
+            "ai_travel_uses": user.ai_travel_uses
         }
         access_token = create_access_token(identity=str(user.id), additional_claims=additional_claims)
         return jsonify(access_token=access_token)
@@ -132,6 +138,9 @@ def save_preferences():
     user.estilo_preferido = data.get('estilo', user.estilo_preferido)
     user.actividad_principal = data.get('actividad', user.actividad_principal)
     user.sensibilidad_frio = data.get('sensibilidad', user.sensibilidad_frio)
+    user.colores_preferidos = data.get('colores_preferidos', user.colores_preferidos)
+    user.preferencia_clima = data.get('preferencia_clima', user.preferencia_clima)
+    user.frecuencia_viajes = data.get('frecuencia_viajes', user.frecuencia_viajes)
     user.preferencias_guardadas = True
     db.session.commit()
     
@@ -140,9 +149,10 @@ def save_preferences():
     additional_claims = {
         "plan": user.plan, 
         "username": user.username,
-        "prefs_saved": user.preferencias_guardadas # Esto ahora será True
+        "prefs_saved": user.preferencias_guardadas, # Esto ahora será True
+        "ai_outfit_uses": user.ai_outfit_uses,
+        "ai_travel_uses": user.ai_travel_uses
     }
-    # 2. Generamos un nuevo token actualizado.
     new_token = create_access_token(identity=str(user.id), additional_claims=additional_claims)
     
     # 3. Lo devolvemos en la respuesta.
@@ -201,8 +211,11 @@ def get_ai_outfit():
         return jsonify({"error": "Usuario no encontrado."}), 404
 
     # Verificar el plan del usuario
-    if user.plan not in ['premium', 'pro']:
-        return jsonify({"error": "Esta función requiere un plan Premium o Pro."}), 403 # 403 Forbidden
+    if user.plan == 'free':
+        if user.ai_outfit_uses >= 3:
+            return jsonify({"error": "Has alcanzado el límite de 3 usos para el consejo de vestimenta. Actualiza a Pro para usos ilimitados."}), 403
+        user.ai_outfit_uses += 1
+        db.session.commit()
 
     # Obtener la ciudad del formulario o JSON, no de la URL
     ciudad = request.form.get('ciudad') # Asumimos que la ciudad vendrá como parte del formulario
@@ -242,7 +255,19 @@ def get_ai_outfit():
 
         prompt = (
         f"""
-            Basándote en las prendas identificadas en las imágenes, el clima actual en {ciudad} (Temperatura: {temperatura}°C, Sensación térmica: {sensacion_termica}°C, Humedad: {humedad}%, Descripción: {descripcion}), y las preferencias del usuario (Estilo: {user.estilo_preferido}, Actividad: {user.actividad_principal}, Sensibilidad al frío: {user.sensibilidad_frio}), genera una recomendación de vestimenta estructurada y concisa. 
+            Basándote en las prendas identificadas en las imágenes, 
+            el clima actual en {ciudad} 
+            (Temperatura: {temperatura}°C, 
+            Sensación térmica: {sensacion_termica}°C, 
+            Humedad: {humedad}%, 
+            Descripción: {descripcion}), 
+            y las preferencias del usuario (Estilo: {user.estilo_preferido}, 
+            Actividad: {user.actividad_principal}, 
+            Sensibilidad al frío: {user.sensibilidad_frio}, 
+            Colores Preferidos: {user.colores_preferidos}, 
+            Preferencia de Clima: {user.preferencia_clima}, 
+            Frecuencia de Viajes: {user.frecuencia_viajes}), 
+            genera una recomendación de vestimenta estructurada 
 
             Tu recomendación debe incluir las siguientes secciones:
             - Parte de arriba:
@@ -251,7 +276,9 @@ def get_ai_outfit():
             - Capas adicionales (si aplica):
             - Accesorios relevantes (si aplica):
 
-            Para cada prenda o accesorio sugerido, incluye una descripción muy breve de sus características (ej. 'camiseta blanca de algodón', 'pantalón vaquero oscuro', 'zapatillas deportivas') para que el usuario pueda identificarla en sus fotos. Enfócate en un atuendo práctico y con estilo. Responde directamente con la recomendación, sin introducciones ni despedidas. NO USES LETRAS NEGRITAS, ASTERISCOS, NI HTML TAGS.
+            Para cada prenda o accesorio sugerido, incluye una descripción muy breve de sus características 
+            (ej. 'camiseta blanca de algodón', 'pantalón vaquero oscuro', 'zapatillas deportivas') para que el usuario pueda identificarla en sus fotos. 
+            Enfócate en un atuendo práctico y con estilo. NO USES LETRAS NEGRITAS, ASTERISCOS, NI HTML TAGS.
         """
         )
 
@@ -262,9 +289,20 @@ def get_ai_outfit():
                 system_instruction="Sos un asistente de estilo y moda profesional. Analiza las prendas de las imágenes para tus recomendaciones.",
                 max_output_tokens=600
             ),
-            contents=[imagenes_pil, prompt] # Enviamos las imágenes y luego el prompt
+            contents=imagenes_pil + [prompt] # Enviamos las imágenes y luego el prompt
         )
-        return jsonify({"consejo": response.text})
+
+        # Generate a new token with updated claims
+        additional_claims = {
+            "plan": user.plan,
+            "username": user.username,
+            "prefs_saved": user.preferencias_guardadas,
+            "ai_outfit_uses": user.ai_outfit_uses,
+            "ai_travel_uses": user.ai_travel_uses
+        }
+        new_token = create_access_token(identity=str(user.id), additional_claims=additional_claims)
+
+        return jsonify({"consejo": response.text, "access_token": new_token})
     except Exception as e:
         print(f"Error al contactar la API de Gemini o procesar: {e}")
         return jsonify({"error": "No se pudo generar el consejo de IA de vestimenta."}), 500
@@ -296,7 +334,10 @@ def get_ai_advice(ciudad):
             f"El usuario tiene las siguientes preferencias: "
             f"Estilo: '{user.estilo_preferido}', "
             f"Actividad principal del día: '{user.actividad_principal}', "
-            f"Sensibilidad al frío: '{user.sensibilidad_frio}'.\n"
+            f"Sensibilidad al frío: '{user.sensibilidad_frio}', "
+            f"Colores preferidos: '{user.colores_preferidos}', "
+            f"Preferencia de clima: '{user.preferencia_clima}', "
+            f"Frecuencia de viajes: '{user.frecuencia_viajes}'.\n"
             f"El clima actual es: Condición: {descripcion}, Temperatura: {temperatura}°C, "
             f"Sensación térmica: {sensacion_termica}°C, Humedad: {humedad}%.\n"
             f"Basado en TODA esta información (preferencias del usuario Y el clima), "
@@ -339,8 +380,10 @@ def upgrade_plan():
     additional_claims = {
         "plan": user.plan, 
         "username": user.username,
-        "prefs_saved": user.preferencias_guardadas
-    }
+        "prefs_saved": user.preferencias_guardadas,
+        "ai_outfit_uses": user.ai_outfit_uses,
+        "ai_travel_uses": user.ai_travel_uses
+        }
     new_token = create_access_token(identity=str(user.id), additional_claims=additional_claims)
     
     # Creamos UN SOLO diccionario con ambas claves: "mensaje" y "access_token".
@@ -359,8 +402,11 @@ def get_ai_travel_advice():
         return jsonify({"error": "Usuario no encontrado."}), 404
 
     # 1. Verificar el plan del usuario
-    if user.plan not in ['premium', 'pro']:
-        return jsonify({"error": "Esta función requiere un plan Premium o Pro."}), 403
+    if user.plan == 'free':
+        if user.ai_travel_uses >= 1:
+            return jsonify({"error": "Has alcanzado el límite de 1 uso para el asistente de viaje. Actualiza a Pro para usos ilimitados."}), 403
+        user.ai_travel_uses += 1
+        db.session.commit()
 
     data = request.get_json()
     ciudad_destino = data.get('ciudad_destino')
@@ -396,6 +442,9 @@ def get_ai_travel_advice():
             - Estilo preferido: {user.estilo_preferido}
             - Actividad principal planeada: {user.actividad_principal}
             - Sensibilidad al frío: {user.sensibilidad_frio}
+            - Colores preferidos: {user.colores_preferidos}
+            - Preferencia de clima: {user.preferencia_clima}
+            - Frecuencia de viajes: {user.frecuencia_viajes}
             
             Clima actual en {ciudad_destino}:
             Temperatura: {temperatura}°C
@@ -421,7 +470,18 @@ def get_ai_travel_advice():
             ),
             contents=[prompt]
         )
-        return jsonify({"consejo": response.text})
+
+        # Generate a new token with updated claims
+        additional_claims = {
+            "plan": user.plan,
+            "username": user.username,
+            "prefs_saved": user.preferencias_guardadas,
+            "ai_outfit_uses": user.ai_outfit_uses,
+            "ai_travel_uses": user.ai_travel_uses
+        }
+        new_token = create_access_token(identity=str(user.id), additional_claims=additional_claims)
+
+        return jsonify({"consejo": response.text, "access_token": new_token})
     except Exception as e:
         print(f"Error al contactar la API de Gemini o procesar: {e}")
         return jsonify({"error": "No se pudo generar el consejo de viaje de IA."}), 500

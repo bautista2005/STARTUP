@@ -14,17 +14,30 @@ const CloudSunIcon = () => (
     </svg>
 );
 
-function NavLink({ href, children, onClick }) {
+function NavLink({ href, children, onClick, isButton }) {
     const [hover, setHover] = useState(false);
 
-    const linkStyle = {
-        color: hover ? '#3B82F6' : '#4B5568',
+    const baseStyle = {
         textDecoration: 'none',
         fontWeight: '600',
         fontSize: '1rem',
-        padding: '0.5rem 0',
+        padding: '0.5rem 1rem',
+        borderRadius: '0.5rem',
+        transition: 'all 0.3s ease-in-out',
+        cursor: 'pointer',
+    };
+
+    const linkStyle = {
+        ...baseStyle,
+        color: hover ? '#3B82F6' : '#4B5568',
         position: 'relative',
-        transition: 'color 0.3s',
+    };
+
+    const buttonStyle = {
+        ...baseStyle,
+        backgroundColor: '#3B82F6',
+        color: '#FFFFFF',
+        boxShadow: '0 4px 6px rgba(59, 130, 246, 0.1)',
     };
 
     const underlineStyle = {
@@ -39,190 +52,227 @@ function NavLink({ href, children, onClick }) {
         transition: 'transform 0.3s ease-out',
     };
 
+    const finalStyle = isButton ? { ...buttonStyle, ...(hover && { backgroundColor: '#2563EB', transform: 'translateY(-2px)', boxShadow: '0 6px 12px rgba(59, 130, 246, 0.15)' }) } : linkStyle;
+
     return (
         <a 
             href={href}
-            style={linkStyle}
+            style={finalStyle}
             onClick={onClick}
             onMouseEnter={() => setHover(true)}
             onMouseLeave={() => setHover(false)}
         >
             {children}
-            <span style={underlineStyle}></span>
+            {!isButton && <span style={underlineStyle}></span>}
         </a>
     );
 }
 
-function LandingPage({ onNavigateToAuth, setView, handleUpgrade, currentUserPlan }) {
+export function SharedNav({ onNavigateToAuth }) {
+    const handleNavLinkClick = (e, id) => {
+        e.preventDefault();
+        const element = document.getElementById(id);
+        if (element) {
+            element.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+        }
+    };
+
+    return (
+        <nav style={landingPageStyles.navbar}>
+            <div style={landingPageStyles.navbarContent}>
+                <button onClick={(e) => handleNavLinkClick(e, 'hero')} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+                    <LogoIcon />
+                </button>
+                <div style={landingPageStyles.navLinksWrapper}>
+                    <ul style={landingPageStyles.navLinks}>
+                        <li><NavLink href="#features" onClick={(e) => handleNavLinkClick(e, 'features')}>Características</NavLink></li>
+                        <li><NavLink href="#pricing" onClick={(e) => handleNavLinkClick(e, 'pricing')}>Precios</NavLink></li>
+                        <li><NavLink href="#contact" onClick={(e) => handleNavLinkClick(e, 'contact')}>Contacto</NavLink></li>
+                    </ul>
+                </div>
+                <NavLink href="#" onClick={() => onNavigateToAuth('auth')} isButton>Iniciar Sesión</NavLink>
+            </div>
+        </nav>
+    );
+}
+
+const landingPageStyles = {
+    navbar: {
+        backgroundColor: '#FFFFFF',
+        borderBottom: '1px solid #E5E7EB',
+        position: 'fixed',
+        width: '100%',
+        top: 0,
+        left: 0,
+        right: 0,
+        zIndex: 1000,
+        boxSizing: 'border-box',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    navbarContent: {
+        maxWidth: '1200px',
+        width: '100%',
+        padding: '1rem 2rem', // Reduced vertical padding
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+    },
+    navLinksWrapper: {
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        gap: '3rem',
+    },
+    navTitle: {
+        ...styles.header,
+        fontSize: '1.5rem',
+        color: '#1F2937',
+    },
+    navLinks: {
+        listStyle: 'none',
+        padding: 0,
+        margin: 0,
+        display: 'flex',
+        gap: '3rem',
+    },
+    hero: {
+        background: 'linear-gradient(135deg, #F9FAFB 0%, #E5E7EB 100%)', // Subtle gradient
+        color: '#1F2937',
+        textAlign: 'center',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: '100%',
+        minHeight: '100vh', // Full viewport height
+        padding: '6rem 2rem',
+    },
+    heroContent: {
+        padding: '0 2rem',
+        maxWidth: '800px', // Adjusted max-width
+        width: '100%',
+        textAlign: 'center',
+    },
+    heroAppName: {
+        fontSize: '4rem', // Larger font size
+        fontWeight: '900', // Bolder
+        color: '#1F2937',
+        marginBottom: '1.5rem',
+        letterSpacing: '-0.05em', // Tighter letter spacing
+    },
+    heroTagline: {
+        fontSize: '1.75rem', // Larger font size
+        fontWeight: '600', // Bolder
+        marginBottom: '2.5rem',
+        lineHeight: '1.5',
+        color: '#4B5568',
+        maxWidth: '700px',
+        margin: '0 auto 2.5rem auto',
+    },
+    heroSubtitle: {
+        fontSize: '1.25rem', // Larger font size
+        color: '#6B7280',
+        marginBottom: '3rem',
+        lineHeight: '1.7',
+        maxWidth: '700px',
+        margin: '0 auto 3rem auto',
+    },
+    ctaButton: {
+        backgroundColor: '#3B82F6',
+        color: '#FFFFFF',
+        padding: '1rem 2.5rem',
+        fontSize: '1rem',
+        fontWeight: '600',
+        border: 'none',
+        borderRadius: '0.5rem',
+        cursor: 'pointer',
+        boxShadow: '0 4px 6px rgba(59, 130, 246, 0.1)',
+        transition: 'all 0.3s ease-in-out',
+        '&:hover': {
+            backgroundColor: '#2563EB',
+            transform: 'translateY(-2px)',
+            boxShadow: '0 6px 12px rgba(59, 130, 246, 0.15)',
+        },
+    },
+    section: {
+        textAlign: 'center',
+        width: '100%',
+        minHeight: '100vh', // Each section takes full viewport height
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    sectionContent: {
+        padding: '80px 2rem 0 2rem', // Padding to push content below navbar, and horizontal padding
+        maxWidth: '1200px',
+        width: '100%',
+        margin: '0 auto',
+    },
+    sectionTitle: {
+        fontSize: '2.5rem',
+        fontWeight: '700',
+        color: styles.header.color,
+        marginBottom: '3rem',
+    },
+    featuresGrid: {
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+        gap: '2rem',
+        maxWidth: '1200px',
+        margin: '0 auto',
+    },
+    featureCard: {
+        ...styles.card,
+        textAlign: 'center',
+        padding: '2.5rem', // Increased padding
+        transition: 'all 0.3s ease-in-out',
+        cursor: 'default',
+        '&:hover': {
+            transform: 'translateY(-5px)',
+            boxShadow: '0 10px 20px rgba(0,0,0,0.1)',
+        },
+    },
+    featureTitle: {
+        fontSize: '1.5rem', // Increased font size
+        fontWeight: '600',
+        color: styles.header.color,
+        marginBottom: '0.75rem', // Adjusted margin
+    },
+    featureDescription: {
+        fontSize: '1.05rem', // Slightly larger font size
+        color: styles.subtitle.color,
+        lineHeight: '1.6',
+    },
+    pricingSection: {
+        backgroundColor: '#FFFFFF',
+    },
+    contactSection: {
+        backgroundColor: styles.appWrapper.backgroundColor,
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+        minHeight: '100vh',
+    },
+    footer: {
+        background: '#1F2937', // Un gris más oscuro
+        color: '#E5E7EB', // Un gris claro para el texto
+        textAlign: 'center',
+        padding: '2rem 0',
+    },
+};
+
+function LandingPage({ onNavigateToAuth, handleUpgrade, currentUserPlan }) {
     const plans = [
         { id: 'free', name: 'Plan Gratuito', price: '$0', cta: 'Comenzar' },
-        { id: 'premium', name: 'Plan Premium', price: '$2.99', cta: 'Actualizar Ahora' },
-        { id: 'pro', name: 'Plan Pro', price: '$4.99', cta: 'Volverse Pro' }
+        { id: 'premium', name: 'Plan Premium', price: '$5', originalPrice: '$10', cta: '¡Mejorar Ahora!' }
     ];
-
-    const landingPageStyles = {
-        navbar: {
-            backgroundColor: '#FFFFFF',
-            borderBottom: '1px solid #E5E7EB',
-            position: 'fixed',
-            width: '100%',
-            top: 0,
-            left: 0,
-            right: 0,
-            zIndex: 1000,
-            boxSizing: 'border-box',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-        },
-        navbarContent: {
-            maxWidth: '1200px',
-            width: '100%',
-            padding: '1.5rem 2rem',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-        },
-        navLinksWrapper: {
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            gap: '3rem',
-        },
-        navTitle: {
-            ...styles.header,
-            fontSize: '1.5rem',
-            color: '#1F2937',
-        },
-        navLinks: {
-            listStyle: 'none',
-            padding: 0,
-            margin: 0,
-            display: 'flex',
-            gap: '3rem',
-        },
-        hero: {
-            backgroundColor: '#F9FAFB',
-            color: '#1F2937',
-            textAlign: 'center',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: '100%',
-            minHeight: '90vh',
-            padding: '6rem 2rem',
-        },
-        heroContent: {
-            padding: '0 2rem', // Only horizontal padding
-            maxWidth: '900px', // Slightly wider content area
-            width: '100%',
-            textAlign: 'center',
-        },
-        heroAppName: {
-            fontSize: '3rem',
-            fontWeight: '800',
-            color: '#1F2937',
-            marginBottom: '1rem',
-            letterSpacing: '-0.025em',
-        },
-        heroTagline: {
-            fontSize: '1.5rem',
-            fontWeight: '500',
-            marginBottom: '2rem',
-            lineHeight: '1.4',
-            color: '#4B5568',
-            maxWidth: '600px',
-            margin: '0 auto 2rem auto',
-        },
-        heroSubtitle: {
-            fontSize: '1.125rem',
-            color: '#6B7280',
-            marginBottom: '2.5rem',
-            lineHeight: '1.6',
-            maxWidth: '600px',
-            margin: '0 auto 2.5rem auto',
-        },
-        ctaButton: {
-            backgroundColor: '#3B82F6',
-            color: '#FFFFFF',
-            padding: '1rem 2.5rem',
-            fontSize: '1rem',
-            fontWeight: '600',
-            border: 'none',
-            borderRadius: '0.5rem',
-            cursor: 'pointer',
-            boxShadow: '0 4px 6px rgba(59, 130, 246, 0.1)',
-            transition: 'all 0.3s ease-in-out',
-            '&:hover': {
-                backgroundColor: '#2563EB',
-                transform: 'translateY(-2px)',
-                boxShadow: '0 6px 12px rgba(59, 130, 246, 0.15)',
-            },
-        },
-        section: {
-            textAlign: 'center',
-            width: '100%',
-            minHeight: '100vh', // Each section takes full viewport height
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-            alignItems: 'center',
-        },
-        sectionContent: {
-            padding: '80px 2rem 0 2rem', // Padding to push content below navbar, and horizontal padding
-            maxWidth: '1200px',
-            width: '100%',
-            margin: '0 auto',
-        },
-        sectionTitle: {
-            fontSize: '2.5rem',
-            fontWeight: '700',
-            color: styles.header.color,
-            marginBottom: '3rem',
-        },
-        featuresGrid: {
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-            gap: '2rem',
-            maxWidth: '1200px',
-            margin: '0 auto',
-        },
-        featureCard: {
-            ...styles.card,
-            textAlign: 'center',
-            padding: '2.5rem', // Increased padding
-            transition: 'all 0.3s ease-in-out',
-            cursor: 'default',
-            '&:hover': {
-                transform: 'translateY(-5px)',
-                boxShadow: '0 10px 20px rgba(0,0,0,0.1)',
-            },
-        },
-        featureTitle: {
-            fontSize: '1.5rem', // Increased font size
-            fontWeight: '600',
-            color: styles.header.color,
-            marginBottom: '0.75rem', // Adjusted margin
-        },
-        featureDescription: {
-            fontSize: '1.05rem', // Slightly larger font size
-            color: styles.subtitle.color,
-            lineHeight: '1.6',
-        },
-        pricingSection: {
-            backgroundColor: '#FFFFFF',
-        },
-        contactSection: {
-            backgroundColor: styles.appWrapper.backgroundColor,
-        },
-        footer: {
-            background: '#1F2937', // Un gris más oscuro
-            color: '#E5E7EB', // Un gris claro para el texto
-            textAlign: 'center',
-            padding: '2rem 0',
-        },
-    };
 
     const handleNavLinkClick = (e, id) => {
         e.preventDefault();
@@ -232,26 +282,7 @@ function LandingPage({ onNavigateToAuth, setView, handleUpgrade, currentUserPlan
     };
 
     return (
-        <div id="landing-page-scroll-container" style={{ fontFamily: styles.appWrapper.fontFamily, color: '#333', backgroundColor: styles.appWrapper.backgroundColor, maxWidth: '1200px', margin: '0 auto' }}>
-            {/* Navbar */}
-            <nav style={landingPageStyles.navbar}>
-                <div style={landingPageStyles.navbarContent}>
-                    <button onClick={() => document.getElementById('landing-page-scroll-container').scrollTo({ top: 0, behavior: 'smooth' })} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, zIndex: 1001 }}>
-                        <LogoIcon />
-                    </button>
-                    <div style={landingPageStyles.navLinksWrapper}>
-                        <ul style={landingPageStyles.navLinks}>
-                            <li><NavLink href="#features" onClick={(e) => handleNavLinkClick(e, 'features')}>Características</NavLink></li>
-                            <li><NavLink href="#pricing" onClick={(e) => handleNavLinkClick(e, 'pricing')}>Precios</NavLink></li>
-                            <li><NavLink href="#contact" onClick={(e) => handleNavLinkClick(e, 'contact')}>Contacto</NavLink></li>
-                        </ul>
-                    </div>
-                    <button onClick={() => onNavigateToAuth('auth')} style={styles.authToggle}>
-                        Iniciar Sesión
-                    </button>
-                </div>
-            </nav>
-
+        <div id="landing-page-scroll-container" style={{ fontFamily: styles.appWrapper.fontFamily, color: '#333', backgroundColor: styles.appWrapper.backgroundColor, width: '100%' }}>
             <div style={landingPageStyles.mainContentWrapper}>
                 {/* Hero Section */}
                 <section id="hero" style={landingPageStyles.hero}>
@@ -277,13 +308,13 @@ function LandingPage({ onNavigateToAuth, setView, handleUpgrade, currentUserPlan
                         </div>
                         <div style={landingPageStyles.featureCard}>
                             <RobotIcon />
-                            <h3 style={landingPageStyles.featureTitle}>Consejos de Vestimenta con IA</h3>
-                            <p style={landingPageStyles.featureDescription}>Sube fotos de tu ropa y recibe recomendaciones sobre qué ponerte según el clima de tu destino. (Premium/Pro)</p>
+                            <h3 style={landingPageStyles.featureTitle}>Consejos de Vestimenta con IA <span style={styles.proTag}>Premium</span></h3>
+                            <p style={landingPageStyles.featureDescription}>Sube fotos de tu ropa y recibe recomendaciones sobre qué ponerte según el clima de tu destino.</p>
                         </div>
                         <div style={landingPageStyles.featureCard}>
                             <RobotIcon />
-                            <h3 style={landingPageStyles.featureTitle}>Asistente de Viaje Inteligente</h3>
-                            <p style={landingPageStyles.featureDescription}>Planifica tus viajes con la ayuda de nuestra IA, que te dará consejos sobre qué empacar y qué esperar del clima. (Premium/Pro)</p>
+                            <h3 style={landingPageStyles.featureTitle}>Asistente de Viaje Inteligente <span style={styles.proTag}>Premium</span></h3>
+                            <p style={landingPageStyles.featureDescription}>Planifica tus viajes con la ayuda de nuestra IA, que te dará consejos sobre qué empacar y qué esperar del clima.</p>
                         </div>
                         </div>
                     </div>
@@ -293,17 +324,24 @@ function LandingPage({ onNavigateToAuth, setView, handleUpgrade, currentUserPlan
                 <section id="pricing" style={{ ...landingPageStyles.section, ...landingPageStyles.pricingSection }}>
                     <div style={landingPageStyles.sectionContent}>
                         <h2 style={landingPageStyles.sectionTitle}>Elige el Plan Perfecto Para Ti</h2>
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2rem', justifyContent: 'center', maxWidth: '1200px', margin: '0 auto' }}>
-                            {plans.map(plan => (
+                        <div style={{ display: 'flex', justifyContent: 'center', gap: '2rem', maxWidth: '1200px', margin: '0 auto' }}>
+                            <div style={{ flex: 1, maxWidth: '400px' }}>
                                 <PlanCard
-                                    key={plan.id}
-                                    plan={plan}
-                                    popular={plan.id === 'premium'}
+                                    plan={plans[0]}
                                     handleUpgrade={handleUpgrade}
-                                    isCurrentUserPlan={plan.id === currentUserPlan}
-                                    onSelectPlan={() => onNavigateToAuth('auth')} // Redirige al login/registro al seleccionar
+                                    isCurrentUserPlan={plans[0].id === currentUserPlan}
+                                    onSelectPlan={() => onNavigateToAuth('auth')}
                                 />
-                            ))}
+                            </div>
+                            <div style={{ flex: 1, maxWidth: '400px' }}>
+                                <PlanCard
+                                    plan={plans[1]}
+                                    popular={true}
+                                    handleUpgrade={handleUpgrade}
+                                    isCurrentUserPlan={plans[1].id === currentUserPlan}
+                                    onSelectPlan={() => onNavigateToAuth('auth')}
+                                />
+                            </div>
                         </div>
                     </div>
                 </section>

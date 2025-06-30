@@ -1,7 +1,7 @@
 import React from 'react';
 import { styles } from '../styles/professionalStyles';
 
-function PlanTag({ plan }) {
+function PlanTag({ plan = 'free' }) {
     const getPlanStyle = () => {
         switch(plan) {
             case 'premium':

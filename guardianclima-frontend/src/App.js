@@ -10,12 +10,23 @@ import AuthView from './components/AuthView';
 import PersonalizationView from './components/PersonalizationView';
 import MainView from './components/MainView';
 import PricingPage from './components/PricingPage';
-import LandingPage from './components/LandingPage';
+import LandingPage, { SharedNav } from './components/LandingPage';
 
 // --- COMPONENTE PRINCIPAL ---
 function App() {
   // --- 2. GESTIÓN DEL ESTADO CENTRALIZADO ---
   const [view, setView] = useState('landing');
+  const [transitioning, setTransitioning] = useState(false);
+
+  const handleSetView = (newView) => {
+    if (view !== newView) {
+      setTransitioning(true);
+      setTimeout(() => {
+        setView(newView);
+        setTransitioning(false);
+      }, 500); // Match CSS transition duration
+    }
+  };
   const [user, setUser] = useState(null);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -59,9 +70,12 @@ function App() {
             id: decoded.sub,
             username: decoded.username,
             plan: decoded.plan,
-            prefs_saved: decoded.prefs_saved
+            prefs_saved: decoded.prefs_saved,
+            ai_outfit_uses: decoded.ai_outfit_uses,
+            ai_travel_uses: decoded.ai_travel_uses
         };
         setUser(currentUser);
+        console.log("Updated currentUser:", currentUser); // Add this line
       } catch (e) {
         console.error("Token inválido o expirado:", e); // Añadir log para depuración
         handleLogout();
@@ -163,7 +177,11 @@ function App() {
   useEffect(() => {
     if (user) {
       handleFetchHistory();
-      setView('main');
+      if (user.prefs_saved) {
+        setView('main');
+      } else {
+        setView('personalization');
+      }
     }
   }, [user]);
 
@@ -201,6 +219,10 @@ function App() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'No se pudo generar el consejo.');
       setConsejoIA(data.consejo);
+      if (data.access_token) {
+        localStorage.setItem('token', data.access_token);
+        updateUserFromToken(data.access_token);
+      }
     } catch (err) { setError(err.message); setConsejoIA(''); }
     finally { setIsAdviceLoading(false); }
   };
@@ -252,6 +274,10 @@ function App() {
       setAiOutfitConsejo(data.consejo);
       // Guardar las imágenes que se usaron para generar este consejo
       setSubmittedImages(selectedFiles.map(file => URL.createObjectURL(file)));
+      if (data.access_token) {
+        localStorage.setItem('token', data.access_token);
+        updateUserFromToken(data.access_token);
+      }
     } catch (err) {
       console.error("Error al generar consejo de vestimenta con IA:", err);
       setAiOutfitError(err.message || "Ocurrió un error al generar el consejo de vestimenta.");
@@ -290,11 +316,15 @@ function App() {
 
       if (!response.ok) {
           const errorData = await response.json();
-          throw new Error(errorData.error || 'Error al generar el asistente de viaje.');
+          throw new new Error(errorData.error || 'Error al generar el asistente de viaje.');
       }
 
       const data = await response.json();
       setTravelAdvice(data.consejo);
+      if (data.access_token) {
+        localStorage.setItem('token', data.access_token);
+        updateUserFromToken(data.access_token);
+      }
     } catch (err) {
       console.error("Error al generar consejo de viaje con IA:", err);
       setTravelError(err.message || "Ocurrió un error al generar el consejo de viaje.");
@@ -323,7 +353,6 @@ function App() {
         localStorage.setItem('token', data.access_token);
         updateUserFromToken(data.access_token);
       }
-      setView('main');
     } catch (err) {
       setError(err.message);
     } finally {
@@ -333,75 +362,73 @@ function App() {
 
   // --- 4. RENDERIZADO CONDICIONAL DE VISTAS ---
   const renderContent = () => {
-    switch(view) {
-      case 'auth':
-        return (
-          <AuthView
-            handleAuth={handleAuth}
-            isLoading={isLoading}
-            error={error}
-            username={username}
-            setUsername={setUsername}
-            email={email}
-            setEmail={setEmail}
-            password={password}
-            setPassword={setPassword}
-            handleToggleAuthMode={handleToggleAuthMode}
-            setView={setView}
-          />
-        );
+    const content = {
+      auth: (
+        <AuthView
+          handleAuth={handleAuth}
+          isLoading={isLoading}
+          error={error}
+          username={username}
+          setUsername={setUsername}
+          email={email}
+          setEmail={setEmail}
+          password={password}
+          setPassword={setPassword}
+          handleToggleAuthMode={handleToggleAuthMode}
+          setView={handleSetView}
+        />
+      ),
+      personalization: <PersonalizationView setView={handleSetView} user={user} setUser={setUser} />,
+      main: user ? (
+        <MainView
+          user={user}
+          setView={handleSetView}
+          handleLogout={handleLogout}
+          ciudad={ciudad}
+          setCiudad={setCiudad}
+          handleBuscarClima={handleBuscarClima}
+          isLoading={isLoading}
+          isAdviceLoading={isAdviceLoading}
+          historial={historial}
+          error={error}
+          clima={clima}
+          consejoIA={consejoIA}
+          handleConsejoIA={handleConsejoIA}
+          selectedFiles={selectedFiles}
+          setSelectedFiles={setSelectedFiles}
+          aiOutfitConsejo={aiOutfitConsejo}
+          isAiOutfitLoading={isAiOutfitLoading}
+          aiOutfitError={aiOutfitError}
+          handleGenerateAiOutfit={handleGenerateAiOutfit}
+          submittedImages={submittedImages}
+          outfitCity={outfitCity}
+          setOutfitCity={setOutfitCity}
+          handleGenerateTravelAdvice={handleGenerateTravelAdvice}
+          isTravelLoading={isTravelLoading}
+          travelAdvice={travelAdvice}
+          travelError={travelError}
+          handleFetchHistory={handleFetchHistory}
+        />
+      ) : null,
+      pricing: <PricingPage setView={handleSetView} handleUpgrade={handleUpgradePlan} currentUserPlan={user?.plan} />,
+      landing: <LandingPage onNavigateToAuth={handleSetView} handleUpgrade={handleUpgradePlan} currentUserPlan={user?.plan} />,
+    };
 
-      case 'personalization':
-        return <PersonalizationView setView={setView} user={user} setUser={setUser} />;
+    return content[view] || content.landing;
+  };
 
-      case 'main':
-        return (
-          <MainView
-            user={user}
-            setView={setView}
-            handleLogout={handleLogout}
-            ciudad={ciudad}
-            setCiudad={setCiudad}
-            handleBuscarClima={handleBuscarClima}
-            isLoading={isLoading}
-            isAdviceLoading={isAdviceLoading} // para el consejo IA básico
-            historial={historial}
-            error={error}
-            clima={clima}
-            consejoIA={consejoIA} // consejo IA básico
-            handleConsejoIA={handleConsejoIA} // función para consejo IA básico
-            // --- NUEVAS PROPS PARA EL CONSEJO DE VESTIMENTA CON IMÁGENES ---
-            selectedFiles={selectedFiles}
-            setSelectedFiles={setSelectedFiles}
-            aiOutfitConsejo={aiOutfitConsejo}
-            isAiOutfitLoading={isAiOutfitLoading}
-            aiOutfitError={aiOutfitError}
-            handleGenerateAiOutfit={handleGenerateAiOutfit}
-            submittedImages={submittedImages} // Pasar las imágenes enviadas
-            outfitCity={outfitCity} // --- NUEVO: Pasar la ciudad del outfit
-            setOutfitCity={setOutfitCity} // --- NUEVO: Pasar el setter de la ciudad del outfit
-
-            // --- PROPS PARA EL ASISTENTE DE VIAJE ---
-            handleGenerateTravelAdvice={handleGenerateTravelAdvice}
-            isTravelLoading={isTravelLoading}
-            travelAdvice={travelAdvice}
-            travelError={travelError}
-            handleFetchHistory={handleFetchHistory} // --- NUEVO: Pasar la función para recargar el historial
-            // --- FIN NUEVAS PROPS ---
-          />
-        );
-      case 'pricing':
-        return <PricingPage setView={setView} handleUpgrade={handleUpgradePlan} currentUserPlan={user.plan} />;
-
-      default: // This will be 'landing' by default, or any other unhandled view
-        return <LandingPage onNavigateToAuth={setView} handleUpgrade={handleUpgradePlan} currentUserPlan={user?.plan} />;
-    }
-  }
+  const containerStyle = {
+    width: '100%',
+    margin: '0 auto',
+    padding: view === 'landing' ? '0' : '0 2rem',
+    maxWidth: view === 'landing' ? 'none' : '1200px',
+  };
 
   return (
     <div style={styles.appWrapper}>
       <GlobalStyles />
-      <div style={styles.container}>
+      {view === 'landing' && <SharedNav onNavigateToAuth={handleSetView} />}
+      <div style={containerStyle} className={transitioning ? 'fade-out' : 'fade-in'}>
         {renderContent()}
       </div>
     </div>
