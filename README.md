@@ -42,8 +42,8 @@ GuardianClima is a web application that provides weather information and persona
 1.  **Clone the repository:**
 
     ```bash
-    git clone https://your-repository-url.git
-    cd your-repository-folder
+    git clone [https://your-repository-url.git](https://github.com/bautista2005/STARTUP.git)
+    cd [your-repository-folder]
     ```
 
 2.  **Create a virtual environment and activate it:**
