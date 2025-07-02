@@ -14,6 +14,7 @@ from google import genai
 from google.genai import types
 import os
 from dotenv import load_dotenv
+import json
 
 load_dotenv(override=True)
 
@@ -72,6 +73,20 @@ class Queries(db.Model):
     descripcion = db.Column(db.String(100))
     timestamp = db.Column(db.DateTime, default=dt.datetime.utcnow)
     user = db.relationship('Users', backref=db.backref('queries', lazy=True))
+
+class OutfitHistory(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    city = db.Column(db.String(100), nullable=False)
+    advice = db.Column(db.Text, nullable=False)
+    date = db.Column(db.DateTime, default=dt.datetime.utcnow)
+
+    def to_dict(self):
+        return {
+            'city': self.city,
+            'advice': self.advice,
+            'date': self.date.isoformat()
+        }
 
 # --- 4. Creación de Tablas ---
 with app.app_context():
@@ -302,6 +317,18 @@ def get_ai_outfit():
             contents=imagenes_pil + [prompt] # Enviamos las imágenes y luego el prompt
         )
 
+        advice_text = response.text
+        # Save the AI advice to the outfit history
+        print(f"[DEBUG] Saving outfit for user_id={current_user_id}, city={ciudad}, advice={advice_text[:60]}...")
+        new_outfit = OutfitHistory(
+            user_id=current_user_id,
+            city=ciudad,
+            advice=advice_text,
+            date=dt.datetime.utcnow()
+        )
+        db.session.add(new_outfit)
+        db.session.commit()
+
         # Generate a new token with updated claims
         additional_claims = {
             "plan": user.plan,
@@ -312,7 +339,7 @@ def get_ai_outfit():
         }
         new_token = create_access_token(identity=str(user.id), additional_claims=additional_claims)
 
-        return jsonify({"consejo": response.text, "access_token": new_token})
+        return jsonify({"consejo": advice_text, "access_token": new_token})
     except Exception as e:
         print(f"Error al contactar la API de Gemini o procesar: {e}")
         return jsonify({"error": "No se pudo generar el consejo de IA de vestimenta."}), 500
@@ -497,6 +524,28 @@ def get_ai_travel_advice():
         print(f"Error al contactar la API de Gemini o procesar: {e}")
         return jsonify({"error": "No se pudo generar el consejo de viaje de IA."}), 500
 
+@app.route('/api/v1/outfits', methods=['GET'])
+@jwt_required()
+def get_outfits():
+    user_id = get_jwt_identity()
+    outfits = OutfitHistory.query.filter_by(user_id=user_id).order_by(OutfitHistory.date.desc()).all()
+    print(f"[DEBUG] Fetching outfits for user_id={user_id}, found {len(outfits)} outfits.")
+    return jsonify([o.to_dict() for o in outfits])
+
+@app.route('/api/v1/outfits', methods=['POST'])
+@jwt_required()
+def save_outfit():
+    user_id = get_jwt_identity()
+    data = request.get_json()
+    new_outfit = OutfitHistory(
+        user_id=user_id,
+        city=data.get('city'),
+        advice=data.get('advice'),
+        date=dt.datetime.fromisoformat(data['date']) if 'date' in data else dt.datetime.utcnow()
+    )
+    db.session.add(new_outfit)
+    db.session.commit()
+    return jsonify({'success': True, 'id': new_outfit.id})
 
 # --- 8. Ejecución de la Aplicación ---
 if __name__ == '__main__':

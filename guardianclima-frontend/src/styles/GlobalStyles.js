@@ -230,6 +230,44 @@ export const GlobalStyles = () => (
     .card-hover:hover {
     }
     
+    /* Animated Gradient Border Hover Effect */
+    .card-hover-gradient {
+      position: relative;
+      border-radius: 1.5rem;
+      background: white;
+      transition: all 0.3s ease;
+    }
+    
+    .card-hover-gradient::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      border-radius: 1.5rem;
+      padding: 2px;
+      background: linear-gradient(90deg, #3B82F6, #6366F1, #8B5CF6, #EC4899, #3B82F6);
+      background-size: 300% 100%;
+      -webkit-mask: 
+        linear-gradient(#fff 0 0) content-box, 
+        linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    
+    .card-hover-gradient:hover::before {
+      opacity: 1;
+      animation: gradientShift 4s ease infinite;
+    }
+    
+    .card-hover-gradient:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    }
+    
     /* Focus States */
     *:focus {
       outline: 2px solid #3B82F6;

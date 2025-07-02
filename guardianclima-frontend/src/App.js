@@ -45,6 +45,7 @@ function App() {
   const [aiOutfitError, setAiOutfitError] = useState(null); // Para errores del consejo de vestimenta con imágenes
   const [submittedImages, setSubmittedImages] = useState([]); // Para las imágenes que generaron el consejo
   const [outfitCity, setOutfitCity] = useState(''); // --- NUEVO: Ciudad para el consejo de outfit
+  const [lastOutfitCity, setLastOutfitCity] = useState(''); // Ciudad usada para el último consejo generado
 
   // --- ESTADOS PARA EL ASISTENTE DE VIAJE ---
   const [travelAdvice, setTravelAdvice] = useState(null);
@@ -149,7 +150,7 @@ function App() {
     if (!storedToken) return;
 
     try {
-      const res = await fetch(`${API_URL}/api/v1/history`, {
+      const res = await fetch(`${API_URL}/api/v1/outfits`, {
         headers: { 'Authorization': `Bearer ${storedToken}` }
       });
       const data = await res.json();
@@ -182,7 +183,7 @@ function App() {
 
   const handleBuscarClima = async () => {
     if (!ciudad) return;
-    setIsLoading(true); setClima(null); setError(''); setConsejoIA(''); setAiOutfitConsejo(null); // Limpiar consejo de outfit al buscar nuevo clima
+    setIsLoading(true); setClima(null); setError(''); setConsejoIA(''); /* setAiOutfitConsejo(null); */ // Limpiar consejo de outfit al buscar nuevo clima
     try {
       const storedToken = localStorage.getItem('token');
       const res = await fetch(`${API_URL}/api/v1/weather/${ciudad}`, {
@@ -267,6 +268,7 @@ function App() {
 
       const data = await response.json();
       setAiOutfitConsejo(data.consejo);
+      setLastOutfitCity(outfitCity); // Guardar la ciudad usada para el último consejo
       // Guardar las imágenes que se usaron para generar este consejo
       setSubmittedImages(selectedFiles.map(file => URL.createObjectURL(file)));
       if (data.access_token) {
@@ -403,6 +405,7 @@ function App() {
           travelAdvice={travelAdvice}
           travelError={travelError}
           handleFetchHistory={handleFetchHistory}
+          lastOutfitCity={lastOutfitCity}
         />
       ) : null,
       pricing: <PricingPage setView={handleSetView} handleUpgrade={handleUpgradePlan} currentUserPlan={user?.plan} />,

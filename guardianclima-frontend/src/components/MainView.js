@@ -1,6 +1,6 @@
 // MainView.js
 
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { styles } from '../styles/professionalStyles';
 import PlanTag from './PlanTag';
 import WeatherCard from './WeatherCard';
@@ -35,16 +35,27 @@ function MainView(props) {
         submittedImages, // Las imágenes que generaron el consejo
         outfitCity, // --- NUEVO: Ciudad para el consejo de outfit
         setOutfitCity, // --- NUEVO: Setter para la ciudad del outfit
-
         // --- PROPS PARA EL ASISTENTE DE VIAJE ---
         handleGenerateTravelAdvice,
         isTravelLoading,
         travelAdvice,
         travelError,
+        setAiOutfitConsejo,
         // --- FIN NUEVAS PROPS ---
+        lastOutfitCity,
     } = props;
 
     const fileInputRef = useRef(null); // --- NUEVO: Referencia para el input de archivo
+
+    // --- NUEVO: Outfit history state ---
+    const [outfitHistory, setOutfitHistory] = useState([]);
+    const [selectedOutfitIndex, setSelectedOutfitIndex] = useState(null);
+    // Modal state
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [modalOutfit, setModalOutfit] = useState(null);
+
+    // Set the backend API base URL
+    const API_BASE_URL = 'http://localhost:5000';
 
     // --- NUEVO: Efecto para limpiar el input de archivo después de la carga ---
     useEffect(() => {
@@ -56,6 +67,33 @@ function MainView(props) {
         }
     }, [isAiOutfitLoading, aiOutfitConsejo]);
 
+    // Fetch outfit history from backend on mount/user change or after new AI advice
+    useEffect(() => {
+        const fetchHistory = async () => {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                console.error('No token found in localStorage. User may not be logged in.');
+                return;
+            }
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/v1/outfits`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    setOutfitHistory(data);
+                    setSelectedOutfitIndex(data.length > 0 ? 0 : null);
+                } else {
+                    const errorText = await res.text();
+                    console.error('Failed to fetch outfit history:', res.status, errorText);
+                }
+            } catch (e) {
+                console.error('Error fetching outfit history:', e);
+            }
+        };
+        fetchHistory();
+    }, [user, aiOutfitConsejo]);
+
     // Función auxiliar para manejar el cambio de archivos en el input de tipo 'file'
     const handleFileChange = (event) => {
         setSelectedFiles(Array.from(event.target.files));
@@ -64,6 +102,56 @@ function MainView(props) {
     // Función auxiliar para verificar si el usuario tiene un plan Premium o Pro 
     const isPremium = user && user.plan === 'premium';
     const isFree = user && user.plan === 'free';
+
+    // --- UI logic for showing advice ---
+    const showAdvice = () => {
+        // Only show advice if a new one was generated in this session
+        if (aiOutfitConsejo && submittedImages.length > 0 && lastOutfitCity) {
+            return (
+                <div className="fade-in" style={{...styles.aiAdvice, marginTop: '2rem'}}>
+                    <div style={styles.aiAdviceIconContainer}>
+                        <RobotIcon />
+                    </div>
+                    <div style={{ width: '100%', textAlign: 'center' }}>
+                        <h4 style={styles.aiAdviceTitle}>Tu Outfit por Guardián IA</h4>
+                        <div style={styles.imageGallery}>
+                            {submittedImages.map((image, index) => (
+                                <img key={index} src={image} alt={`prenda ${index + 1}`} style={styles.galleryImage} />
+                            ))}
+                        </div>
+                        <p style={{ ...styles.aiAdviceText, whiteSpace: 'pre-line' }}>{aiOutfitConsejo}</p>
+                        <div style={{ color: '#64748B', fontSize: '0.9em', marginTop: '0.5em' }}>
+                            <span>Ciudad: {lastOutfitCity}</span> &nbsp;|&nbsp;
+                            <span>{new Date().toLocaleString('es-ES')}</span>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+        // Default message
+        return (
+            <div style={{ color: '#64748B', textAlign: 'center', marginTop: '2rem' }}>
+                {'Genera un nuevo consejo de vestimenta para verlo aquí.'}
+            </div>
+        );
+    };
+
+    // Debug: log the outfit history before rendering
+    console.log('outfitHistory:', outfitHistory);
+
+    // Handler to open modal with outfit details
+    const handleOpenModal = (outfit) => {
+        setModalOutfit(outfit);
+        setIsModalOpen(true);
+    };
+    const handleCloseModal = () => {
+        setIsModalOpen(false);
+        setModalOutfit(null);
+    };
+
+    useEffect(() => {
+        if (typeof setAiOutfitConsejo === 'function') setAiOutfitConsejo('');
+    }, []);
 
     return (
         <div className="fade-in" style={{ minHeight: '100vh', backgroundColor: '#F8FAFC' }}>
@@ -109,7 +197,7 @@ function MainView(props) {
                     {/* Main Content Area */}
                     <div style={styles.mainContentArea}>
                         {/* Search Card */}
-                        <div style={styles.card}>
+                        <div className="card-hover-gradient" style={styles.card}>
                             <div style={styles.searchCardCentered}>
                                 <h3 style={styles.cardTitle}>Buscar Clima</h3>
                                 <div className="search-section" style={styles.searchSection}>
@@ -167,7 +255,7 @@ function MainView(props) {
                         />}
 
                         {/* --- NUEVA SECCIÓN: CONSEJO DE VESTIMENTA CON IMÁGENES (PREMIUM/PRO) --- */}
-                        <div className="fade-in card-hover" style={styles.card}>
+                        <div className="card-hover-gradient" style={styles.card}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75em', marginBottom: '0.5em' }}>
                                 <h3 style={styles.premiumCardTitle}>
                                     Consejo de Vestimenta con IA{isPremium ? ' Premium' : ''}
@@ -228,32 +316,43 @@ function MainView(props) {
                                 />
                             </div>
 
-                            {/* File Upload Section */}
-                            <div style={{ width: '100%', marginBottom: '1.5rem' }}>
-                                <label style={styles.inputLabel}>Fotos de tu ropa</label>
+                            {/* --- File Upload Section --- */}
+                            <div style={{ margin: '1.5rem 0' }}>
                                 <input
+                                    id="file-upload"
                                     type="file"
-                                    multiple // Permite seleccionar múltiples archivos
-                                    accept="image/*" // Solo acepta archivos de imagen
-                                    onChange={handleFileChange} // Llama a la función al cambiar la selección de archivos
-                                    style={{...styles.fileInput, width: '100%'}} // Aplica estilos para el input de archivo
+                                    multiple
+                                    style={{ display: 'none' }}
+                                    ref={fileInputRef}
+                                    onChange={handleFileChange}
                                     disabled={isAiOutfitLoading || (isFree && user.ai_outfit_uses >= 3)}
-                                    ref={fileInputRef} // --- NUEVO: Asignar la referencia
                                 />
-                                {/* Muestra los nombres de los archivos seleccionados */}
-                                {selectedFiles.length > 0 && (
-                                    <div style={{
-                                        marginTop: '0.75rem', 
-                                        fontSize: '0.875rem', 
-                                        color: '#64748B',
-                                        backgroundColor: '#F1F5F9',
-                                        padding: '0.75rem',
-                                        borderRadius: '0.5rem',
-                                        border: '1px solid #E2E8F0'
-                                    }}>
-                                        📁 Archivos seleccionados: {selectedFiles.map(file => file.name).join(', ')}
-                                    </div>
-                                )}
+                                <label
+                                    htmlFor="file-upload"
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        gap: '0.75em',
+                                        padding: '1.25em 2em',
+                                        border: '2px dashed #3B82F6',
+                                        borderRadius: '1rem',
+                                        background: '#F1F5FE',
+                                        color: '#2563EB',
+                                        fontWeight: 600,
+                                        fontSize: '1.1em',
+                                        cursor: isAiOutfitLoading || (isFree && user.ai_outfit_uses >= 3) ? 'not-allowed' : 'pointer',
+                                        transition: 'background 0.2s, border 0.2s',
+                                        marginBottom: '0.5em'
+                                    }}
+                                    onMouseOver={e => e.currentTarget.style.background = '#E0E7FF'}
+                                    onMouseOut={e => e.currentTarget.style.background = '#F1F5FE'}
+                                >
+                                    <span role="img" aria-label="upload">📁</span>
+                                    {selectedFiles && selectedFiles.length > 0
+                                        ? `${selectedFiles.length} archivo(s) seleccionado(s)`
+                                        : 'Elegir fotos de tu ropa'}
+                                </label>
                             </div>
 
                             {/* Botón para generar el consejo de IA con imágenes */}
@@ -271,26 +370,8 @@ function MainView(props) {
                             {/* Muestra mensajes de error específicos para esta funcionalidad */}
                             {aiOutfitError && <p style={styles.error}>{aiOutfitError}</p>}
 
-                            {/* Muestra el consejo de vestimenta si ya se generó */}
-                            {aiOutfitConsejo && (
-                                <div className="fade-in" style={{...styles.aiAdvice, marginTop: '2rem'}}>
-                                    <div style={styles.aiAdviceIconContainer}>
-                                        <RobotIcon />
-                                    </div>
-                                    <div style={{ width: '100%', textAlign: 'center' }}>
-                                        <h4 style={styles.aiAdviceTitle}>Tu Outfit por Guardián IA</h4>
-                                        {/* Galería de imágenes subidas */}
-                                        {submittedImages.length > 0 && (
-                                            <div style={styles.imageGallery}>
-                                                {submittedImages.map((image, index) => (
-                                                    <img key={index} src={image} alt={`prenda ${index + 1}`} style={styles.galleryImage} />
-                                                ))}
-                                            </div>
-                                        )}
-                                        <p style={styles.aiAdviceText}>{aiOutfitConsejo}</p>
-                                    </div>
-                                </div>
-                            )}
+                            {/* --- Show selected outfit from history or latest AI advice --- */}
+                            {showAdvice()}
 
                             {isFree && user.ai_outfit_uses >= 3 && (
                                 <button onClick={() => setView('pricing')} style={{...styles.upgradeButton, marginTop: '1.5rem', width: '100%'}}>
@@ -301,21 +382,23 @@ function MainView(props) {
                         {/* --- FIN NUEVA SECCIÓN --- */}
 
                         {/* --- NUEVA SECCIÓN: ASISTENTE DE VIAJE (PREMIUM/PRO) --- */}
-                        {user.plan === 'premium' && (
-                            <TravelAssistant 
-                                user={user}
-                                handleGenerateTravelAdvice={handleGenerateTravelAdvice}
-                                isTravelLoading={isTravelLoading}
-                                travelAdvice={travelAdvice}
-                                travelError={travelError}
-                                setView={setView}
-                            />
-                        )}
+                        <div className="card-hover-gradient" style={styles.card}>
+                            {user.plan === 'premium' && (
+                                <TravelAssistant 
+                                    user={user}
+                                    handleGenerateTravelAdvice={handleGenerateTravelAdvice}
+                                    isTravelLoading={isTravelLoading}
+                                    travelAdvice={travelAdvice}
+                                    travelError={travelError}
+                                    setView={setView}
+                                />
+                            )}
+                        </div>
                         {/* --- FIN NUEVA SECCIÓN --- */}
                     </div>
 
-                    {/* Enhanced History Sidebar */}
-                    <div className="history-sidebar" style={{ 
+                    {/* Historial de Outfits Sidebar */}
+                    <div className="history-sidebar card-hover-gradient" style={{ 
                         ...styles.card, 
                         ...styles.historyCard, 
                         width: '100%', 
@@ -324,13 +407,73 @@ function MainView(props) {
                         position: 'sticky',
                         top: '2rem'
                     }}>
-                        <HistoryList 
-                            user={user} 
-                            historial={user?.plan === 'free' ? historial.slice(0, 5) : historial} 
-                        />
+                        <h3 style={{...styles.cardTitle, textAlign: 'center'}}>Historial de Outfits</h3>
+                        <ul style={styles.historyList}>
+                            {outfitHistory.length === 0 && (
+                                <li style={{ color: '#64748B', textAlign: 'center', padding: '1.5rem 0' }}>No hay outfits generados aún.</li>
+                            )}
+                            {outfitHistory.map((item, index) => (
+                                <li
+                                className="history-item"
+                                onClick={() => handleOpenModal(item)}
+                                >
+                                    <div>
+                                        <strong style={styles.historyCity}>{item.city}</strong>
+                                        <p style={styles.historyDesc}>{new Date(item.date).toLocaleDateString('es-ES')}</p>
+                                    </div>
+                                </li>
+                            ))}
+                        </ul>
                     </div>
                 </div>
             </div>
+
+            {/* Modal for outfit details */}
+            {isModalOpen && modalOutfit && (
+                <div style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    width: '100vw',
+                    height: '100vh',
+                    background: 'rgba(0,0,0,0.4)',
+                    backdropFilter: 'blur(2px)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 1000
+                }}>
+                    <div style={{
+                        background: 'white',
+                        borderRadius: '1.5rem',
+                        padding: '2rem',
+                        maxWidth: 500,
+                        width: '90%',
+                        position: 'relative',
+                        textAlign: 'center',
+                        border: '2px solid transparent',
+                        backgroundClip: 'padding-box, border-box',
+                        backgroundOrigin: 'padding-box, border-box',
+                        backgroundImage: 'linear-gradient(white, white), linear-gradient(90deg, #3B82F6, #6366F1)',
+                        boxShadow: '0 8px 32px rgba(59,130,246,0.18)',
+                        animation: 'modalFadeIn 0.3s cubic-bezier(.4,2,.6,1)'
+                    }}>
+                        <button onClick={handleCloseModal} style={{
+                            position: 'absolute',
+                            top: 16,
+                            right: 16,
+                            background: 'none',
+                            border: 'none',
+                            fontSize: '1.5rem',
+                            cursor: 'pointer',
+                            color: '#64748B'
+                        }}>&times;</button>
+                        <h2 style={{marginBottom: '1rem', color: '#2563EB'}}>Outfit para {modalOutfit.city}</h2>
+                        <div style={{color: '#64748B', marginBottom: '1rem'}}>{new Date(modalOutfit.date).toLocaleString('es-ES')}</div>
+                        <div style={{textAlign: 'left', color: '#374151', fontSize: '1.1rem', whiteSpace: 'pre-line'}}>{modalOutfit.advice}</div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

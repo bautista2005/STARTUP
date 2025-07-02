@@ -392,12 +392,12 @@ function LandingPage({ onNavigateToAuth, handleUpgrade, currentUserPlan }) {
                     </div>
                     <div style={landingPageStyles.featureCard}>
                         <RobotIcon />
-                        <h3 style={landingPageStyles.featureTitle}>Consejos de Vestimenta con IA <span style={styles.proTag}>Premium</span></h3>
+                        <h3 style={landingPageStyles.featureTitle}>Consejos de Vestimenta con IA <h3 style={styles.premium}>Premium</h3></h3>
                         <p style={landingPageStyles.featureDescription}>Sube fotos de tu ropa y recibe recomendaciones sobre qué ponerte según el clima de tu destino.</p>
                     </div>
                     <div style={landingPageStyles.featureCard}>
                         <RobotIcon />
-                        <h3 style={landingPageStyles.featureTitle}>Asistente de Viaje Inteligente <span style={styles.proTag}>Premium</span></h3>
+                        <h3 style={landingPageStyles.featureTitle}>Asistente de Viaje Inteligente <h3 style={styles.premium}>Premium</h3></h3>
                         <p style={landingPageStyles.featureDescription}>Planifica tus viajes con la ayuda de nuestra IA, que te dará consejos sobre qué empacar y qué esperar del clima.</p>
                     </div>
                     </div>

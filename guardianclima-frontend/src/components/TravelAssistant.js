@@ -99,8 +99,8 @@ function TravelAssistant({ user, handleGenerateTravelAdvice, isTravelLoading, tr
                         <RobotIcon />
                     </div>
                     <div>
-                        <h4 style={styles.aiAdviceTitle}>Tu Equipaje Inteligente</h4>
-                        <p style={styles.aiAdviceText}>{travelAdvice}</p>
+                        <h4 style={{ ...styles.aiAdviceTitle, textAlign: 'center' }}>Tu Equipaje Inteligente</h4>
+                        <p style={{ ...styles.aiAdviceText, whiteSpace: 'pre-line' }}>{travelAdvice}</p>
                     </div>
                 </div>
             )}
