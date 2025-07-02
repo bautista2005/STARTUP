@@ -15,6 +15,7 @@ from google.genai import types
 import os
 from dotenv import load_dotenv
 import json
+import paypalrestsdk
 
 load_dotenv(override=True)
 
@@ -33,6 +34,12 @@ CORS(app,
      supports_credentials=True,
      allow_headers=["Authorization", "Content-Type"] 
 )
+
+# Configuración de PayPal
+paypalrestsdk.configure({
+  "mode": "sandbox", # sandbox o live
+  "client_id": os.getenv("PAYPAL_CLIENT_ID"),
+  "client_secret": os.getenv("PAYPAL_CLIENT_SECRET") })
 
 # --- 3. Definición de Modelos (con email y plan) ---
 class Users(db.Model):
@@ -486,7 +493,7 @@ def get_ai_travel_advice():
             f"- Tipo de calzado preferido: {user.tipo_calzado}\n"
             f"- Frecuencia de ejercicio físico: {user.frecuencia_ejercicio}\n"
             f"- Preferencia de tejidos: {user.preferencia_tejido}\n"
-            f"- Prenda favorita: {user.prenda_favorita}\n\n"
+            f"- Prenda favorita: {user.prenda_favorita}.\n"
             f"Clima actual en {ciudad_destino}:\n"
             f"Temperatura: {temperatura}°C\n"
             f"Sensación térmica: {sensacion_termica}°C\n"
@@ -546,6 +553,50 @@ def save_outfit():
     db.session.add(new_outfit)
     db.session.commit()
     return jsonify({'success': True, 'id': new_outfit.id})
+
+@app.route('/api/paypal/create-order', methods=['POST'])
+@jwt_required()
+def create_paypal_order():
+    import requests
+    client_id = os.getenv("PAYPAL_CLIENT_ID")
+    client_secret = os.getenv("PAYPAL_CLIENT_SECRET")
+
+    # Get an access token from PayPal
+    auth_response = requests.post(
+        "https://api-m.sandbox.paypal.com/v1/oauth2/token",
+        headers={"Accept": "application/json", "Accept-Language": "en_US"},
+        data={"grant_type": "client_credentials"},
+        auth=(client_id, client_secret)
+    )
+    if not auth_response.ok:
+        return jsonify({"error": "Failed to authenticate with PayPal.", "details": auth_response.text}), 500
+    access_token = auth_response.json()['access_token']
+
+    # Create an order
+    order_response = requests.post(
+        "https://api-m.sandbox.paypal.com/v2/checkout/orders",
+        headers={
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {access_token}"
+        },
+        json={
+            "intent": "CAPTURE",
+            "purchase_units": [{
+                "amount": {
+                    "currency_code": "USD",
+                    "value": "5.00"
+                }
+            }],
+            "application_context": {
+                "return_url": "https://your-production-domain.com/payment/execute",
+                "cancel_url": "https://your-production-domain.com/"
+            }
+        }
+    )
+    if not order_response.ok:
+        return jsonify({"error": "Failed to create PayPal order.", "details": order_response.text}), 500
+    order = order_response.json()
+    return jsonify({"orderID": order["id"]})
 
 # --- 8. Ejecución de la Aplicación ---
 if __name__ == '__main__':
