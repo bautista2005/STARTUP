@@ -7,6 +7,7 @@ import WeatherCard from './WeatherCard';
 import HistoryList from './HistoryList';
 import TravelAssistant from './TravelAssistant'; // --- NUEVO: Importar el componente
 import { LogoutIcon, StarIcon, WandIcon, RobotIcon } from './icons'; // Asegúrate de que WandIcon y RobotIcon estén importados
+import Spinner from './Spinner'; // Import the new Spinner component
 
 function MainView(props) {
     // Desestructurar las props para facilitar el uso y la lectura del código
@@ -363,7 +364,7 @@ function MainView(props) {
                                 disabled={isAiOutfitLoading || selectedFiles.length === 0 || !outfitCity || (isFree && user.ai_outfit_uses >= 3)}
                                 style={{...styles.aiButton, marginTop: '1rem', width: '100%'}}
                             >
-                                <WandIcon />
+                                {isAiOutfitLoading ? <Spinner /> : <WandIcon />}
                                 {isAiOutfitLoading ? 'Analizando Ropa...' : 'Generar Consejo de Vestimenta'}
                             </button>
 

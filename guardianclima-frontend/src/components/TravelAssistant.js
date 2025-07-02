@@ -1,7 +1,7 @@
-// src/components/TravelAssistant.js
 import React, { useState } from 'react';
 import { styles } from '../styles/professionalStyles';
 import { RobotIcon, WandIcon, StarIcon } from './icons';
+import Spinner from './Spinner'; // Import the new Spinner component
 
 function TravelAssistant({ user, handleGenerateTravelAdvice, isTravelLoading, travelAdvice, travelError, setView }) {
     const [destination, setDestination] = useState('');
@@ -86,7 +86,7 @@ function TravelAssistant({ user, handleGenerateTravelAdvice, isTravelLoading, tr
                 disabled={isTravelLoading || !destination || !startDate || !endDate || (isFree && user.ai_travel_uses >= 1)}
                 style={{ ...styles.aiButton, marginTop: '1.5rem' }}
             >
-                <WandIcon />
+                {isTravelLoading ? <Spinner /> : <WandIcon />}
                 {isTravelLoading ? 'Analizando Destino...' : 'Generar Lista de Equipaje'}
             </button>
 
