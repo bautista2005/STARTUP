@@ -82,6 +82,7 @@ MIowmAPI = os.getenv("WEATHER_API_KEY")
 geminiAPI = os.getenv("GEMINI_API_KEY")
 
 if geminiAPI:
+    #api
     gemini_client = genai.Client(api_key=geminiAPI)
 
 # --- 6. Funciones de Ayuda ---
