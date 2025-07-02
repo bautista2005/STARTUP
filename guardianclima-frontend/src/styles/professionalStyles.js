@@ -112,29 +112,27 @@ export const styles = {
         width: '100%', 
         boxSizing: 'border-box',
         border: '1px solid #F1F5F9',
-        transition: 'all 0.3s ease-in-out',
-        '&:hover': {
-            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
-            transform: 'translateY(-2px)'
-        }
     },
     
     // Enhanced Search Section
     searchSection: { 
         display: 'flex', 
-        gap: '1rem', 
+        gap: '1.2rem', 
         width: '100%',
-        alignItems: 'center'
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: '0.5rem',
     },
     searchInput: { 
         flex: 1, 
-        padding: '1rem 1.5rem', 
-        fontSize: '1rem', 
+        padding: '1.2rem 1.5rem', 
+        fontSize: '1.1rem', 
         border: '2px solid #E2E8F0', 
-        borderRadius: '1rem', 
+        borderRadius: '1.2rem', 
         outline: 'none',
         transition: 'all 0.3s ease-in-out',
         backgroundColor: '#F8FAFC',
+        boxShadow: '0 2px 8px rgba(59,130,246,0.06)',
         '&:focus': {
             borderColor: '#3B82F6',
             backgroundColor: '#FFFFFF',
@@ -310,12 +308,17 @@ export const styles = {
         textAlign: 'center'
     },
     
-    cardTitle: { 
-        marginTop: 0, 
-        fontWeight: 700, 
-        paddingBottom: '1rem',
-        fontSize: '1.5rem',
-        color: '#1E293B'
+    cardTitle: {
+        margin: 0,
+        fontSize: '2.1rem',
+        fontWeight: 800,
+        background: 'linear-gradient(90deg, #1E40AF 0%, #3B82F6 100%)',
+        backgroundClip: 'text',
+        WebkitBackgroundClip: 'text',
+        WebkitTextFillColor: 'transparent',
+        letterSpacing: '-0.01em',
+        textAlign: 'center',
+        marginBottom: '1.5rem',
     },
     
     // Enhanced Main Content Layout
@@ -447,9 +450,19 @@ export const styles = {
         background: 'linear-gradient(135deg, #60A5FA 0%, #3B82F6 100%)', 
         boxShadow: '0 4px 12px rgba(59, 130, 246, 0.4)' 
     },
-    proTag: { 
-        background: 'linear-gradient(135deg, #1D4ED8 0%, #3B82F6 100%)', 
-        boxShadow: '0 4px 12px rgba(59, 130, 246, 0.4)' 
+    proTag: {
+        display: 'inline-block',
+        background: 'linear-gradient(90deg, #3B82F6 0%, #60A5FA 100%)',
+        color: 'white',
+        fontWeight: 700,
+        fontSize: '0.95em',
+        padding: '0.18em 0.9em',
+        borderRadius: '999px',
+        marginLeft: '0.75em',
+        verticalAlign: 'middle',
+        boxShadow: '0 2px 6px rgba(59,130,246,0.15)',
+        letterSpacing: '0.03em',
+        border: 'none',
     },
     
     freemiumMessage: { 
@@ -496,7 +509,9 @@ export const styles = {
         background: 'linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%)',
         backgroundClip: 'text',
         WebkitBackgroundClip: 'text',
-        WebkitTextFillColor: 'transparent'
+        WebkitTextFillColor: 'transparent',
+        width: '100%',
+        display: 'block',
     },
     
     // Enhanced Image Gallery
@@ -520,5 +535,13 @@ export const styles = {
             transform: 'scale(1.05)',
             boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.2)'
         }
+    },
+    searchCardCentered: {
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '1.5rem',
+        width: '100%',
     },
 };

@@ -30,7 +30,7 @@ function PlanCard({ plan, popular, handleUpgrade, isCurrentUserPlan, onSelectPla
     };
     
     return (
-        <div style={cardStyle} className="fade-in">
+        <div style={cardStyle}>
             {popular && <div style={{position: 'absolute', top: '-15px', left: '50%', transform: 'translateX(-50%)', background: '#6d28d9', color: 'white', padding: '0.25rem 1rem', borderRadius: '99px', fontSize: '0.875rem', fontWeight: 600, boxShadow: '0 4px 8px rgba(0,0,0,0.2)'}}>MÁS POPULAR</div>}
             <h3 style={{fontSize: '1.5rem', fontWeight: 700, color: '#4f46e5', margin: '1rem 0'}}>{plan.name}</h3>
             <p style={{fontSize: '2.5rem', fontWeight: 800, margin: 0}}>

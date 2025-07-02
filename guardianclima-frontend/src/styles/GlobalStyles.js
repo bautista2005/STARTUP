@@ -17,7 +17,7 @@ export const GlobalStyles = () => (
     
     /* Smooth scrolling */
     html {
-      scroll-behavior: smooth;
+      scroll-behavior: auto;
     }
     
     /* Responsive breakpoints */
@@ -85,7 +85,6 @@ export const GlobalStyles = () => (
       border-radius: 1rem;
       cursor: pointer;
       font-weight: 600;
-      transition: all 0.3s ease-in-out;
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -100,10 +99,9 @@ export const GlobalStyles = () => (
       position: absolute;
       top: 0;
       left: -100%;
-      width: 100%;
-      height: 100%;
+      width: '100%';
+      height: '100%';
       background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-      transition: left 0.5s;
     }
     
     .btn:hover::before {
@@ -116,7 +114,6 @@ export const GlobalStyles = () => (
       box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.3), 0 4px 6px -2px rgba(59, 130, 246, 0.2);
     }
     .btn-primary:hover:not(:disabled) {
-      transform: translateY(-3px);
       box-shadow: 0 20px 25px -5px rgba(59, 130, 246, 0.4), 0 10px 10px -5px rgba(59, 130, 246, 0.3);
     }
     
@@ -129,7 +126,6 @@ export const GlobalStyles = () => (
     .btn-secondary:hover:not(:disabled) {
       background: linear-gradient(135deg, #F1F5F9 0%, #E2E8F0 100%);
       border-color: #CBD5E1;
-      transform: translateY(-2px);
       box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
     }
     
@@ -144,7 +140,6 @@ export const GlobalStyles = () => (
       box-shadow: 0 10px 15px -3px rgba(236, 72, 153, 0.3), 0 4px 6px -2px rgba(139, 92, 246, 0.2);
     }
     .btn-gradient:hover:not(:disabled) {
-      transform: translateY(-3px);
       box-shadow: 0 20px 25px -5px rgba(236, 72, 153, 0.4), 0 10px 10px -5px rgba(139, 92, 246, 0.3);
     }
     
@@ -168,14 +163,12 @@ export const GlobalStyles = () => (
         padding: 0.75rem 1.25rem;
         border-radius: 1rem;
         font-weight: 600;
-        transition: all 0.3s ease-in-out;
         box-shadow: 0 4px 6px -1px rgba(220, 38, 38, 0.1);
     }
     .logout-btn:hover {
         background: linear-gradient(135deg, #FEE2E2 0%, #FCA5A5 100%);
         border-color: #F87171;
         color: #B91C1C;
-        transform: translateY(-2px);
         box-shadow: 0 10px 15px -3px rgba(220, 38, 38, 0.2);
     }
     
@@ -195,7 +188,6 @@ export const GlobalStyles = () => (
         background-position: right 1rem center;
         background-repeat: no-repeat;
         background-size: 1.5em 1.5em;
-        transition: all 0.3s ease-in-out;
         cursor: pointer;
     }
     
@@ -233,12 +225,9 @@ export const GlobalStyles = () => (
     
     /* Card Hover Effects */
     .card-hover {
-      transition: all 0.3s ease-in-out;
     }
     
     .card-hover:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
     }
     
     /* Focus States */

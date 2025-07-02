@@ -110,29 +110,37 @@ function MainView(props) {
                     <div style={styles.mainContentArea}>
                         {/* Search Card */}
                         <div style={styles.card}>
-                            <h3 style={styles.cardTitle}>Buscar Clima</h3>
-                            {/* Sección de búsqueda de ciudad  */}
-                            <div className="search-section" style={styles.searchSection}>
-                                <input
-                                    type="text"
-                                    value={ciudad}
-                                    onChange={(e) => setCiudad(e.target.value)}
-                                    placeholder="Busca una ciudad..."
-                                    style={styles.searchInput}
-                                />
-                                <button
-                                    onClick={handleBuscarClima}
-                                    className="btn btn-primary"
-                                    style={{ 
-                                        flexShrink: 0,
-                                        minWidth: '120px',
-                                        height: '56px'
-                                    }}
-                                    // Deshabilita los botones si alguna de las operaciones de IA está en curso
-                                    disabled={isLoading || isAdviceLoading || isAiOutfitLoading}
-                                >
-                                    {isLoading ? 'Buscando...' : 'Buscar'}
-                                </button>
+                            <div style={styles.searchCardCentered}>
+                                <h3 style={styles.cardTitle}>Buscar Clima</h3>
+                                <div className="search-section" style={styles.searchSection}>
+                                    <input
+                                        type="text"
+                                        value={ciudad}
+                                        onChange={(e) => setCiudad(e.target.value)}
+                                        placeholder="Busca una ciudad..."
+                                        style={styles.searchInput}
+                                    />
+                                    <button
+                                        onClick={handleBuscarClima}
+                                        className="btn btn-primary"
+                                        style={{ 
+                                            flexShrink: 0,
+                                            minWidth: '120px',
+                                            height: '56px',
+                                            borderRadius: '1.2rem',
+                                            fontWeight: 700,
+                                            fontSize: '1.1rem',
+                                            boxShadow: '0 4px 16px rgba(59,130,246,0.13)',
+                                            background: 'linear-gradient(90deg, #2563EB 0%, #3B82F6 100%)',
+                                            border: 'none',
+                                            transition: 'background 0.2s, box-shadow 0.2s',
+                                        }}
+                                        // Deshabilita los botones si alguna de las operaciones de IA está en curso
+                                        disabled={isLoading || isAdviceLoading || isAiOutfitLoading}
+                                    >
+                                        {isLoading ? 'Buscando...' : 'Buscar'}
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
@@ -160,10 +168,11 @@ function MainView(props) {
 
                         {/* --- NUEVA SECCIÓN: CONSEJO DE VESTIMENTA CON IMÁGENES (PREMIUM/PRO) --- */}
                         <div className="fade-in card-hover" style={styles.card}>
-                            <h3 style={styles.premiumCardTitle}>
-                                Consejo de Vestimenta con IA 
-                                {isPremium && <span style={styles.proTag}>Premium</span>}
-                            </h3>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75em', marginBottom: '0.5em' }}>
+                                <h3 style={styles.premiumCardTitle}>
+                                    Consejo de Vestimenta con IA{isPremium ? ' Premium' : ''}
+                                </h3>
+                            </div>
                             
                             {/* Usage Information */}
                             {isFree && user.ai_outfit_uses < 3 && (

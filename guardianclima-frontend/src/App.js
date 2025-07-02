@@ -16,15 +16,10 @@ import LandingPage, { SharedNav } from './components/LandingPage';
 function App() {
   // --- 2. GESTIÓN DEL ESTADO CENTRALIZADO ---
   const [view, setView] = useState('landing');
-  const [transitioning, setTransitioning] = useState(false);
 
   const handleSetView = (newView) => {
     if (view !== newView) {
-      setTransitioning(true);
-      setTimeout(() => {
-        setView(newView);
-        setTransitioning(false);
-      }, 500); // Match CSS transition duration
+      setView(newView);
     }
   };
   const [user, setUser] = useState(null);
@@ -428,7 +423,7 @@ function App() {
     <div style={styles.appWrapper}>
       <GlobalStyles />
       {view === 'landing' && <SharedNav onNavigateToAuth={handleSetView} />}
-      <div style={containerStyle} className={transitioning ? 'fade-out' : 'fade-in'}>
+      <div style={containerStyle}>
         {renderContent()}
       </div>
     </div>

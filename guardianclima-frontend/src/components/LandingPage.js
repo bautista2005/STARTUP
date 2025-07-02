@@ -23,7 +23,6 @@ function NavLink({ href, children, onClick, isButton }) {
         fontSize: '1rem',
         padding: '0.5rem 1rem',
         borderRadius: '0.5rem',
-        transition: 'all 0.3s ease-in-out',
         cursor: 'pointer',
     };
 
@@ -49,7 +48,6 @@ function NavLink({ href, children, onClick, isButton }) {
         backgroundColor: '#3B82F6',
         transform: hover ? 'scaleX(1)' : 'scaleX(0)',
         transformOrigin: 'bottom left',
-        transition: 'transform 0.3s ease-out',
     };
 
     const finalStyle = isButton ? { ...buttonStyle, ...(hover && { backgroundColor: '#2563EB', transform: 'translateY(-2px)', boxShadow: '0 6px 12px rgba(59, 130, 246, 0.15)' }) } : linkStyle;
@@ -57,10 +55,11 @@ function NavLink({ href, children, onClick, isButton }) {
     return (
         <a 
             href={href}
-            style={finalStyle}
+            style={{ ...finalStyle, outline: 'none' }}
+            tabIndex={-1}
             onMouseEnter={() => setHover(true)}
             onMouseLeave={() => setHover(false)}
-            {...(isButton ? { onClick } : {})}
+            onClick={onClick}
         >
             {children}
             {!isButton && <span style={underlineStyle}></span>}
@@ -214,27 +213,8 @@ const landingPageStyles = {
         borderRadius: '1rem',
         cursor: 'pointer',
         boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
-        transition: 'all 0.3s ease-in-out',
         position: 'relative',
         overflow: 'hidden',
-        '&:hover': {
-            transform: 'translateY(-3px)',
-            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-            background: 'linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 100%)',
-        },
-        '&::before': {
-            content: '""',
-            position: 'absolute',
-            top: 0,
-            left: '-100%',
-            width: '100%',
-            height: '100%',
-            background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent)',
-            transition: 'left 0.5s',
-        },
-        '&:hover::before': {
-            left: '100%',
-        },
     },
     heroStats: {
         display: 'flex',
@@ -293,12 +273,7 @@ const landingPageStyles = {
         ...styles.card,
         textAlign: 'center',
         padding: '2.5rem', // Increased padding
-        transition: 'all 0.3s ease-in-out',
         cursor: 'default',
-        '&:hover': {
-            transform: 'translateY(-5px)',
-            boxShadow: '0 10px 20px rgba(0,0,0,0.1)',
-        },
     },
     featureTitle: {
         fontSize: '1.5rem', // Increased font size
