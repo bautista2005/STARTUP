@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { styles } from '../styles/professionalStyles'; // Importa los estilos
 import PlanCard from './PlanCard'; // Importa el componente de tarjeta de plan
 import { WandIcon, RobotIcon, LogoIcon } from './icons'; // Importa los iconos existentes
+import PlanCardLanding from './PlanCardLanding';
 
 // Nuevo icono para Pronósticos Precisos
 const CloudSunIcon = () => (
@@ -409,7 +410,7 @@ function LandingPage({ onNavigateToAuth, handleUpgrade, currentUserPlan }) {
                     <h2 style={landingPageStyles.sectionTitle}>Elige el Plan Perfecto Para Ti</h2>
                     <div style={{ display: 'flex', justifyContent: 'center', gap: '2rem', maxWidth: '1200px', margin: '0 auto' }}>
                         <div style={{ flex: 1, maxWidth: '400px' }}>
-                            <PlanCard
+                            <PlanCardLanding
                                 plan={plans[0]}
                                 handleUpgrade={handleUpgrade}
                                 isCurrentUserPlan={plans[0].id === currentUserPlan}
@@ -417,7 +418,7 @@ function LandingPage({ onNavigateToAuth, handleUpgrade, currentUserPlan }) {
                             />
                         </div>
                         <div style={{ flex: 1, maxWidth: '400px' }}>
-                            <PlanCard
+                            <PlanCardLanding
                                 plan={plans[1]}
                                 popular={true}
                                 handleUpgrade={handleUpgrade}
