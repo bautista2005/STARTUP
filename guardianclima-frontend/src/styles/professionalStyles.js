@@ -359,12 +359,15 @@ export const styles = {
         backgroundColor: '#F8FAFC', 
         borderRadius: '1rem', 
         marginBottom: '1rem', 
-        transition: 'all 0.3s ease-in-out',
+        transition: 'all 0.2s cubic-bezier(.4,2,.6,1)',
         border: '1px solid #F1F5F9',
-        '&:hover': {
-            backgroundColor: '#F1F5F9',
-            transform: 'translateX(4px)',
-            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+        cursor: 'pointer',
+        boxShadow: '0 0 0 rgba(0,0,0,0)',
+        ':hover': {
+            backgroundColor: '#E0E7FF',
+            transform: 'translateY(-3px) scale(1.03)',
+            boxShadow: '0 6px 18px -4px rgba(59,130,246,0.10)',
+            border: '1.5px solid #3B82F6',
         }
     },
     historyTempBubble: { 
@@ -450,21 +453,11 @@ export const styles = {
         background: 'linear-gradient(135deg, #60A5FA 0%, #3B82F6 100%)', 
         boxShadow: '0 4px 12px rgba(59, 130, 246, 0.4)' 
     },
-    proTag: {
-        display: 'inline-block',
-        background: 'linear-gradient(90deg, #3B82F6 0%, #60A5FA 100%)',
-        color: 'white',
-        fontWeight: 700,
-        fontSize: '0.95em',
-        padding: '0.18em 0.9em',
-        borderRadius: '999px',
-        marginLeft: '0.75em',
-        verticalAlign: 'middle',
-        boxShadow: '0 2px 6px rgba(59,130,246,0.15)',
-        letterSpacing: '0.03em',
-        border: 'none',
+    premium: {
+        color: '#3B82F6',
+        padding: 0,
+        margin: 0,
     },
-    
     freemiumMessage: { 
         backgroundColor: '#E0F2FE', 
         color: '#1E40AF', 

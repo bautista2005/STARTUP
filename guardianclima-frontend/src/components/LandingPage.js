@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { styles } from '../styles/professionalStyles'; // Importa los estilos
 import PlanCard from './PlanCard'; // Importa el componente de tarjeta de plan
 import { WandIcon, RobotIcon, LogoIcon } from './icons'; // Importa los iconos existentes
+import PlanCardLanding from './PlanCardLanding';
 
 // Nuevo icono para Pronósticos Precisos
 const CloudSunIcon = () => (
@@ -392,12 +393,12 @@ function LandingPage({ onNavigateToAuth, handleUpgrade, currentUserPlan }) {
                     </div>
                     <div style={landingPageStyles.featureCard}>
                         <RobotIcon />
-                        <h3 style={landingPageStyles.featureTitle}>Consejos de Vestimenta con IA <span style={styles.proTag}>Premium</span></h3>
+                        <h3 style={landingPageStyles.featureTitle}>Consejos de Vestimenta con IA <h3 style={styles.premium}>Premium</h3></h3>
                         <p style={landingPageStyles.featureDescription}>Sube fotos de tu ropa y recibe recomendaciones sobre qué ponerte según el clima de tu destino.</p>
                     </div>
                     <div style={landingPageStyles.featureCard}>
                         <RobotIcon />
-                        <h3 style={landingPageStyles.featureTitle}>Asistente de Viaje Inteligente <span style={styles.proTag}>Premium</span></h3>
+                        <h3 style={landingPageStyles.featureTitle}>Asistente de Viaje Inteligente <h3 style={styles.premium}>Premium</h3></h3>
                         <p style={landingPageStyles.featureDescription}>Planifica tus viajes con la ayuda de nuestra IA, que te dará consejos sobre qué empacar y qué esperar del clima.</p>
                     </div>
                     </div>
@@ -409,7 +410,7 @@ function LandingPage({ onNavigateToAuth, handleUpgrade, currentUserPlan }) {
                     <h2 style={landingPageStyles.sectionTitle}>Elige el Plan Perfecto Para Ti</h2>
                     <div style={{ display: 'flex', justifyContent: 'center', gap: '2rem', maxWidth: '1200px', margin: '0 auto' }}>
                         <div style={{ flex: 1, maxWidth: '400px' }}>
-                            <PlanCard
+                            <PlanCardLanding
                                 plan={plans[0]}
                                 handleUpgrade={handleUpgrade}
                                 isCurrentUserPlan={plans[0].id === currentUserPlan}
@@ -417,7 +418,7 @@ function LandingPage({ onNavigateToAuth, handleUpgrade, currentUserPlan }) {
                             />
                         </div>
                         <div style={{ flex: 1, maxWidth: '400px' }}>
-                            <PlanCard
+                            <PlanCardLanding
                                 plan={plans[1]}
                                 popular={true}
                                 handleUpgrade={handleUpgrade}

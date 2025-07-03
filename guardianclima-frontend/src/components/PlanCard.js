@@ -1,5 +1,33 @@
 import React from 'react';
+import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 import { styles } from '../styles/professionalStyles';
+import { jwtDecode } from 'jwt-decode';
+
+// --- Función para verificar y renovar el token ---
+const isTokenExpired = (token) => {
+    if (!token) return true;
+    try {
+        const { exp } = jwtDecode(token);
+        if (Date.now() >= exp * 1000) {
+            return true;
+        }
+        return false;
+    } catch (e) {
+        return true;
+    }
+};
+
+const refreshToken = async () => {
+    // Aquí va la lógica para renovar el token, por ejemplo, llamando a tu endpoint de refresh
+    // Esto es un placeholder, necesitas implementar la lógica real
+    console.log("Token-ul a expirat, este necesară reînnoirea");
+    // const response = await fetch('/api/refresh', { method: 'POST' });
+    // const data = await response.json();
+    // localStorage.setItem('token', data.access_token);
+    // return data.access_token;
+    return null; // Devuelve null si la renovación falla
+};
+
 
 // Icono de Checkmark para las características
 const CheckIcon = () => (
@@ -47,14 +75,58 @@ function PlanCard({ plan, popular, handleUpgrade, isCurrentUserPlan, onSelectPla
                     </li>
                 ))}
             </ul>
-            <button
-                className={buttonStyle}
-                style={{width: '100%', marginTop: '2rem'}}
-                onClick={() => isCurrentUserPlan ? null : (onSelectPlan ? onSelectPlan() : handleUpgrade(plan.id))}
-                disabled={isCurrentUserPlan}
-            >
-                {isCurrentUserPlan ? 'Tu Plan Actual' : plan.cta}
-            </button>
+            {plan.id === 'premium' && !isCurrentUserPlan ? (
+                <PayPalScriptProvider options={{ "client-id": process.env.REACT_APP_PAYPAL_CLIENT_ID }}>
+                    <PayPalButtons
+                        createOrder={async (data, actions) => {
+                            let token = localStorage.getItem('token');
+                            if (isTokenExpired(token)) {
+                                token = await refreshToken();
+                                if (!token) {
+                                    alert("Tu sesión ha expirado. Por favor, inicia sesión de nuevo.");
+                                    return;
+                                }
+                            }
+                            return fetch('/api/paypal/create-order', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Authorization': `Bearer ${token}`
+                                },
+                                body: JSON.stringify({ plan_id: plan.id })
+                            })
+                            .then(res => res.json())
+                            .then(data => {
+                                console.log('PayPal createOrder response:', data);
+                                if (!data.orderID) {
+                                    throw new Error('No se recibió el ID de la orden de PayPal.');
+                                }
+                                return data.orderID;
+                            })
+                            .catch(err => {
+                                alert(err.message);
+                                // Optionally: handle error more gracefully
+                                throw err; // Ensure PayPal SDK knows the order creation failed
+                            });
+                        }}
+                        onApprove={(data, actions) => {
+                            return actions.order.capture().then(details => {
+                                alert('Transaction completed by ' + details.payer.name.given_name);
+                                handleUpgrade(plan.id);
+                            });
+                        }}
+                    />
+                </PayPalScriptProvider>
+            ) : (
+                <button
+                    className={buttonStyle}
+                    style={{width: '100%', marginTop: '2rem'}}
+                    onClick={() => isCurrentUserPlan ? null : (onSelectPlan ? onSelectPlan() : handleUpgrade(plan.id))}
+                    disabled={isCurrentUserPlan}
+                >
+                    {isCurrentUserPlan ? 'Tu Plan Actual' : plan.cta}
+                </button>
+            )}
         </div>
     );
 }
