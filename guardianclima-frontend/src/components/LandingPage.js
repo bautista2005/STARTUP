@@ -1,450 +1,455 @@
-import React, { useState } from 'react';
-import { styles } from '../styles/professionalStyles'; // Importa los estilos
-import PlanCard from './PlanCard'; // Importa el componente de tarjeta de plan
-import { WandIcon, RobotIcon, LogoIcon } from './icons'; // Importa los iconos existentes
+import React, { useState, useEffect } from 'react';
+import { motion, useScroll, useTransform } from 'framer-motion';
+import { useTheme } from '../hooks/useTheme';
+import { ThemeToggle } from '../contexts/ThemeContext';
 import PlanCardLanding from './PlanCardLanding';
 
-// Nuevo icono para Pronósticos Precisos
-const CloudSunIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M12 2a5 5 0 0 0-5 5c0 2.5 2 4.5 5 4.5s5-2 5-4.5a5 5 0 0 0-5-5z"/>
-        <path d="M16 17.5a4.5 4.5 0 0 0-9 0"/>
-        <path d="M12 13v9"/>
-        <path d="M12 13a4 4 0 0 0-4 4"/>
-        <path d="M12 13a4 4 0 0 1 4 4"/>
-    </svg>
+// Modern Professional Icons
+const CloudIcon = () => (
+  <svg className="w-12 h-12 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.003 4.003 0 003 15z" />
+  </svg>
 );
 
-function NavLink({ href, children, onClick, isButton }) {
-    const [hover, setHover] = useState(false);
+const SparklesIcon = () => (
+  <svg className="w-12 h-12 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 3l14 9-14 9V3z" />
+  </svg>
+);
 
-    const baseStyle = {
-        textDecoration: 'none',
-        fontWeight: '600',
-        fontSize: '1rem',
-        padding: '0.5rem 1rem',
-        borderRadius: '0.5rem',
-        cursor: 'pointer',
-    };
+const RobotIcon = () => (
+  <svg className="w-12 h-12 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2z" />
+  </svg>
+);
 
-    const linkStyle = {
-        ...baseStyle,
-        color: hover ? '#3B82F6' : '#4B5568',
-        position: 'relative',
-    };
+const TravelIcon = () => (
+  <svg className="w-12 h-12 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+  </svg>
+);
 
-    const buttonStyle = {
-        ...baseStyle,
-        backgroundColor: '#3B82F6',
-        color: '#FFFFFF',
-        boxShadow: '0 4px 6px rgba(59, 130, 246, 0.1)',
-    };
+const CheckIcon = () => (
+  <svg className="w-5 h-5 text-primary-600" fill="currentColor" viewBox="0 0 20 20">
+    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+  </svg>
+);
 
-    const underlineStyle = {
-        position: 'absolute',
-        width: '100%',
-        height: '2px',
-        bottom: '-2px',
-        left: '0',
-        backgroundColor: '#3B82F6',
-        transform: hover ? 'scaleX(1)' : 'scaleX(0)',
-        transformOrigin: 'bottom left',
-    };
+const LogoIcon = () => (
+  <div className="flex items-center space-x-2">
+    <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-700 rounded-lg flex items-center justify-center">
+      <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.003 4.003 0 003 15z" />
+      </svg>
+    </div>
+    <span className="text-xl font-bold text-gray-900 dark:text-white">GuardianClima</span>
+  </div>
+);
 
-    const finalStyle = isButton ? { ...buttonStyle, ...(hover && { backgroundColor: '#2563EB', transform: 'translateY(-2px)', boxShadow: '0 6px 12px rgba(59, 130, 246, 0.15)' }) } : linkStyle;
-
-    return (
-        <a 
-            href={href}
-            style={{ ...finalStyle, outline: 'none' }}
-            tabIndex={-1}
-            onMouseEnter={() => setHover(true)}
-            onMouseLeave={() => setHover(false)}
-            onClick={onClick}
-        >
-            {children}
-            {!isButton && <span style={underlineStyle}></span>}
-        </a>
-    );
-}
-
+// Modern Navigation Component
 export function SharedNav({ onNavigateToAuth }) {
-    const handleNavLinkClick = (e, id) => {
-        e.preventDefault();
-        const element = document.getElementById(id);
-        if (element) {
-            element.scrollIntoView({
-                behavior: 'smooth',
-                block: 'start'
-            });
-        }
-    };
+  const { theme } = useTheme();
+  const [isScrolled, setIsScrolled] = useState(false);
 
-    return (
-        <nav style={landingPageStyles.navbar}>
-            <div style={landingPageStyles.navbarContent}>
-                <button onClick={(e) => handleNavLinkClick(e, 'hero')} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
-                    <LogoIcon />
-                </button>
-                <div style={landingPageStyles.navLinksWrapper}>
-                    <ul style={landingPageStyles.navLinks}>
-                        <li><NavLink href="#features" onClick={(e) => handleNavLinkClick(e, 'features')}>Características</NavLink></li>
-                        <li><NavLink href="#pricing" onClick={(e) => handleNavLinkClick(e, 'pricing')}>Precios</NavLink></li>
-                        <li><NavLink href="#contact" onClick={(e) => handleNavLinkClick(e, 'contact')}>Contacto</NavLink></li>
-                    </ul>
-                </div>
-                <NavLink href="#" onClick={() => onNavigateToAuth('auth')} isButton>Iniciar Sesión</NavLink>
-            </div>
-        </nav>
-    );
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const handleNavClick = (e, id) => {
+    e.preventDefault();
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  return (
+    <motion.nav 
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        isScrolled 
+          ? 'bg-white/80 dark:bg-gray-900/80 backdrop-blur-md shadow-lg' 
+          : 'bg-transparent'
+      }`}
+      initial={{ y: -100 }}
+      animate={{ y: 0 }}
+      transition={{ duration: 0.3 }}
+    >
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-16">
+          <button 
+            onClick={(e) => handleNavClick(e, 'hero')}
+            className="flex-shrink-0 transition-transform hover:scale-105"
+          >
+            <LogoIcon />
+          </button>
+          
+          <div className="hidden md:flex items-center space-x-8">
+            <a 
+              href="#features" 
+              onClick={(e) => handleNavClick(e, 'features')}
+              className="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 font-medium transition-colors"
+            >
+              Características
+            </a>
+            <a 
+              href="#pricing" 
+              onClick={(e) => handleNavClick(e, 'pricing')}
+              className="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 font-medium transition-colors"
+            >
+              Precios
+            </a>
+            <a 
+              href="#contact" 
+              onClick={(e) => handleNavClick(e, 'contact')}
+              className="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 font-medium transition-colors"
+            >
+              Contacto
+            </a>
+          </div>
+
+          <div className="flex items-center space-x-4">
+            <ThemeToggle 
+              variant="ghost" 
+              size="md"
+              className="rounded-lg"
+            />
+            <button 
+              onClick={() => onNavigateToAuth('auth')}
+              className="btn-shimmer bg-gradient-to-r from-primary-600 to-primary-700 text-white px-6 py-2 rounded-lg font-medium hover:from-primary-700 hover:to-primary-800 transition-all duration-300 shadow-md hover:shadow-lg"
+            >
+              Iniciar Sesión
+            </button>
+          </div>
+        </div>
+      </div>
+    </motion.nav>
+  );
 }
 
-const landingPageStyles = {
-    navbar: {
-        backgroundColor: '#FFFFFF',
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        width: '100%',
-        zIndex: 1000,
-        boxSizing: 'border-box',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        borderBottom: '1px solid #E5E7EB',
-    },
-    navbarContent: {
-        maxWidth: '1200px',
-        width: '100%',
-        padding: '1rem 2rem', // Original vertical padding
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-    },
-    navLinksWrapper: {
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        gap: '3rem',
-    },
-    navTitle: {
-        ...styles.header,
-        fontSize: '1.5rem',
-        color: '#1F2937',
-    },
-    navLinks: {
-        listStyle: 'none',
-        padding: 0,
-        margin: 0,
-        display: 'flex',
-        gap: '3rem',
-    },
-    // Completely redesigned professional hero section
-    hero: {
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)',
-        backgroundSize: '400% 400%',
-        color: '#FFFFFF',
-        textAlign: 'center',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        width: '100%',
-        minHeight: '100vh',
-        padding: '8rem 2rem 6rem 2rem',
-        position: 'relative',
-        overflow: 'hidden',
-    },
-    heroOverlay: {
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        background: 'radial-gradient(circle at 30% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%), radial-gradient(circle at 70% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%)',
-        pointerEvents: 'none',
-    },
-    heroContent: {
-        padding: '0 2rem',
-        maxWidth: '1000px',
-        width: '100%',
-        textAlign: 'center',
-        position: 'relative',
-        zIndex: 2,
-    },
-    heroAppName: {
-        fontSize: '5rem',
-        fontWeight: '900',
-        background: 'linear-gradient(135deg, #FFFFFF 0%, #F8FAFC 100%)',
-        backgroundClip: 'text',
-        WebkitBackgroundClip: 'text',
-        WebkitTextFillColor: 'transparent',
-        marginBottom: '2rem',
-        letterSpacing: '-0.05em',
-        textShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-        lineHeight: '1.1',
-    },
-    heroTagline: {
-        fontSize: '2.25rem',
-        fontWeight: '700',
-        marginBottom: '2rem',
-        lineHeight: '1.3',
-        color: '#F1F5F9',
-        maxWidth: '800px',
-        margin: '0 auto 2rem auto',
-        textShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-    },
-    heroSubtitle: {
-        fontSize: '1.375rem',
-        color: '#E2E8F0',
-        marginBottom: '3.5rem',
-        lineHeight: '1.7',
-        maxWidth: '750px',
-        margin: '0 auto 3.5rem auto',
-        fontWeight: '500',
-    },
-    ctaButton: {
-        background: 'linear-gradient(135deg, #FFFFFF 0%, #F8FAFC 100%)',
-        color: '#1E40AF',
-        padding: '1.5rem 3.5rem',
-        fontSize: '1.25rem',
-        fontWeight: '700',
-        border: 'none',
-        borderRadius: '1rem',
-        cursor: 'pointer',
-        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
-        position: 'relative',
-        overflow: 'hidden',
-    },
-    heroStats: {
-        display: 'flex',
-        justifyContent: 'center',
-        gap: '4rem',
-        marginTop: '4rem',
-        flexWrap: 'wrap',
-    },
-    statItem: {
-        textAlign: 'center',
-        color: '#F1F5F9',
-    },
-    statNumber: {
-        fontSize: '2.5rem',
-        fontWeight: '800',
-        color: '#FFFFFF',
-        marginBottom: '0.5rem',
-        textShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-    },
-    statLabel: {
-        fontSize: '1rem',
-        fontWeight: '600',
-        color: '#E2E8F0',
-        textTransform: 'uppercase',
-        letterSpacing: '0.05em',
-    },
-    section: {
-        textAlign: 'center',
-        width: '100%',
-        minHeight: '100vh', // Each section takes full viewport height
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    sectionContent: {
-        padding: '80px 2rem 0 2rem', // Padding to push content below navbar, and horizontal padding
-        maxWidth: '1200px',
-        width: '100%',
-        margin: '0 auto',
-    },
-    sectionTitle: {
-        fontSize: '2.5rem',
-        fontWeight: '700',
-        color: styles.header.color,
-        marginBottom: '3rem',
-    },
-    featuresGrid: {
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-        gap: '2rem',
-        maxWidth: '1200px',
-        margin: '0 auto',
-    },
-    featureCard: {
-        ...styles.card,
-        textAlign: 'center',
-        padding: '2.5rem', // Increased padding
-        cursor: 'default',
-    },
-    featureTitle: {
-        fontSize: '1.5rem', // Increased font size
-        fontWeight: '600',
-        color: styles.header.color,
-        marginBottom: '0.75rem', // Adjusted margin
-    },
-    featureDescription: {
-        fontSize: '1.05rem', // Slightly larger font size
-        color: styles.subtitle.color,
-        lineHeight: '1.6',
-    },
-    pricingSection: {
-        backgroundColor: '#FFFFFF',
-    },
-    contactSection: {
-        backgroundColor: styles.appWrapper.backgroundColor,
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
-        alignItems: 'center',
-        minHeight: '100vh',
-    },
-    footer: {
-        background: '#1F2937', // Un gris más oscuro
-        color: '#E5E7EB', // Un gris claro para el texto
-        textAlign: 'center',
-        padding: '2rem 0',
-    },
-};
-
+// Main Landing Page Component
 function LandingPage({ onNavigateToAuth, handleUpgrade, currentUserPlan }) {
-    const plans = [
-        { id: 'free', name: 'Plan Gratuito', price: '$0', cta: 'Comenzar' },
-        { id: 'premium', name: 'Plan Premium', price: '$5', originalPrice: '$10', cta: '¡Mejorar Ahora!' }
-    ];
+  const { theme } = useTheme();
+  const { scrollYProgress } = useScroll();
+  const y = useTransform(scrollYProgress, [0, 1], ['0%', '50%']);
 
-    const handleNavLinkClick = (e, id) => {
-        e.preventDefault();
-        document.getElementById(id).scrollIntoView({
-            behavior: 'smooth'
-        });
-    };
+  const plans = [
+    {
+      id: 'free',
+      name: 'Gratuito',
+      price: '$0',
+      period: '/mes',
+      description: 'Perfecto para uso personal',
+      features: [
+        'Pronósticos básicos del clima',
+        '3 consejos de vestimenta IA',
+        'Historial de búsquedas',
+        'Soporte por email'
+      ],
+      buttonText: 'Comenzar Gratis',
+      popular: false
+    },
+    {
+      id: 'premium',
+      name: 'Premium',
+      price: '$9.99',
+      period: '/mes',
+      description: 'Para usuarios avanzados',
+      features: [
+        'Pronósticos precisos y detallados',
+        'Consejos de vestimenta IA ilimitados',
+        'Asistente de viaje inteligente',
+        'Análisis de fotos de ropa',
+        'Recomendaciones personalizadas',
+        'Soporte prioritario 24/7'
+      ],
+      buttonText: 'Suscribirse Ahora',
+      popular: true
+    }
+  ];
 
-    // Gradient background for hero and area above navbar
-    const heroGradientBg = {
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)',
-        backgroundSize: '400% 400%',
-        minHeight: '100vh',
-        width: '100%',
-        position: 'relative',
-        padding: 0,
-        margin: 0,
-    };
-
-    return (
-        <div id="landing-page-scroll-container" style={{ fontFamily: styles.appWrapper.fontFamily, color: '#333', backgroundColor: styles.appWrapper.backgroundColor, width: '100%' }}>
-            <div style={heroGradientBg}>
-                <nav style={landingPageStyles.navbar}>
-                    <div style={landingPageStyles.navbarContent}>
-                        <button onClick={(e) => handleNavLinkClick(e, 'hero')} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
-                            <LogoIcon />
-                        </button>
-                        <div style={landingPageStyles.navLinksWrapper}>
-                            <ul style={landingPageStyles.navLinks}>
-                                <li><NavLink href="#features" onClick={(e) => handleNavLinkClick(e, 'features')}>Características</NavLink></li>
-                                <li><NavLink href="#pricing" onClick={(e) => handleNavLinkClick(e, 'pricing')}>Precios</NavLink></li>
-                                <li><NavLink href="#contact" onClick={(e) => handleNavLinkClick(e, 'contact')}>Contacto</NavLink></li>
-                            </ul>
-                        </div>
-                        <NavLink href="#" onClick={() => onNavigateToAuth('auth')} isButton>Iniciar Sesión</NavLink>
-                    </div>
-                </nav>
-                {/* Hero Section */}
-                <section id="hero" style={{ ...landingPageStyles.hero, paddingTop: '7.5rem' }}>
-                    <div style={landingPageStyles.heroOverlay}></div>
-                    <div style={landingPageStyles.heroContent}>
-                        <h1 style={landingPageStyles.heroAppName}>Guardián Clima</h1>
-                        <h3 style={landingPageStyles.heroTagline}>
-                            Tu Pronóstico del Tiempo, Elevado a un Nuevo Nivel
-                        </h3>
-                        <p style={landingPageStyles.heroSubtitle}>
-                            Guardián Clima no solo te dice si lloverá, sino que te prepara para ello con consejos de vestimenta 
-                            y asistencia de viaje impulsados por IA.
-                        </p>
-                        <button onClick={() => onNavigateToAuth('auth')} style={landingPageStyles.ctaButton}>
-                            🚀 Empieza Gratis
-                        </button>
-                        {/* Professional Stats */}
-                        <div style={landingPageStyles.heroStats}>
-                            <div style={landingPageStyles.statItem}>
-                                <div style={landingPageStyles.statNumber}>10K+</div>
-                                <div style={landingPageStyles.statLabel}>Usuarios Activos</div>
-                            </div>
-                            <div style={landingPageStyles.statItem}>
-                                <div style={landingPageStyles.statNumber}>99.9%</div>
-                                <div style={landingPageStyles.statLabel}>Precisión</div>
-                            </div>
-                            <div style={landingPageStyles.statItem}>
-                                <div style={landingPageStyles.statNumber}>24/7</div>
-                                <div style={landingPageStyles.statLabel}>Disponibilidad</div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-            </div>
-            {/* Features Section */}
-            <section id="features" style={landingPageStyles.section}>
-                <div style={landingPageStyles.sectionContent}>
-                    <h2 style={landingPageStyles.sectionTitle}>Funcionalidades Clave</h2>
-                    <div style={landingPageStyles.featuresGrid}>
-                        <div style={landingPageStyles.featureCard}>
-                        <CloudSunIcon />
-                        <h3 style={landingPageStyles.featureTitle}>Pronósticos Precisos</h3>
-                        <p style={landingPageStyles.featureDescription}>Obtén datos meteorológicos detallados y confiables para cualquier ciudad del mundo al instante.</p>
-                    </div>
-                    <div style={landingPageStyles.featureCard}>
-                        <RobotIcon />
-                        <h3 style={landingPageStyles.featureTitle}>Consejos de Vestimenta con IA <h3 style={styles.premium}>Premium</h3></h3>
-                        <p style={landingPageStyles.featureDescription}>Sube fotos de tu ropa y recibe recomendaciones sobre qué ponerte según el clima de tu destino.</p>
-                    </div>
-                    <div style={landingPageStyles.featureCard}>
-                        <RobotIcon />
-                        <h3 style={landingPageStyles.featureTitle}>Asistente de Viaje Inteligente <h3 style={styles.premium}>Premium</h3></h3>
-                        <p style={landingPageStyles.featureDescription}>Planifica tus viajes con la ayuda de nuestra IA, que te dará consejos sobre qué empacar y qué esperar del clima.</p>
-                    </div>
-                    </div>
-                </div>
-            </section>
-            {/* Pricing Section */}
-            <section id="pricing" style={{ ...landingPageStyles.section, ...landingPageStyles.pricingSection }}>
-                <div style={landingPageStyles.sectionContent}>
-                    <h2 style={landingPageStyles.sectionTitle}>Elige el Plan Perfecto Para Ti</h2>
-                    <div style={{ display: 'flex', justifyContent: 'center', gap: '2rem', maxWidth: '1200px', margin: '0 auto' }}>
-                        <div style={{ flex: 1, maxWidth: '400px' }}>
-                            <PlanCardLanding
-                                plan={plans[0]}
-                                handleUpgrade={handleUpgrade}
-                                isCurrentUserPlan={plans[0].id === currentUserPlan}
-                                onSelectPlan={() => onNavigateToAuth('auth')}
-                            />
-                        </div>
-                        <div style={{ flex: 1, maxWidth: '400px' }}>
-                            <PlanCardLanding
-                                plan={plans[1]}
-                                popular={true}
-                                handleUpgrade={handleUpgrade}
-                                isCurrentUserPlan={plans[1].id === currentUserPlan}
-                                onSelectPlan={() => onNavigateToAuth('auth')}
-                            />
-                        </div>
-                    </div>
-                </div>
-            </section>
-            {/* Contact Section */}
-            <section id="contact" style={{ ...landingPageStyles.section, ...landingPageStyles.contactSection }}>
-                <div style={landingPageStyles.sectionContent}>
-                    <h2 style={landingPageStyles.sectionTitle}>¿Tienes Preguntas?</h2>
-                    <p style={{ ...styles.subtitle, maxWidth: '500px', margin: '0 auto 2rem auto' }}>Estamos aquí para ayudarte. Contáctanos para cualquier consulta o sugerencia.</p>
-                    <a href="mailto:contacto@guardianclima.com" style={landingPageStyles.ctaButton}>
-                        Enviar un Email
-                    </a>
-                </div>
-            </section>
-            {/* Footer */}
-            <footer style={landingPageStyles.footer}>
-                <p>&copy; {new Date().getFullYear()} Guardián Clima. Todos los derechos reservados.</p>
-            </footer>
+  return (
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      {/* Hero Section */}
+      <section id="hero" className="relative min-h-screen flex items-center justify-center overflow-hidden">
+        {/* Animated Background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-primary-50 via-white to-blue-50 dark:from-gray-900 dark:via-primary-950 dark:to-gray-900">
+          <div className="absolute inset-0 opacity-30">
+            <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-primary-200 dark:bg-primary-800 rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
+            <div className="absolute top-1/3 right-1/4 w-72 h-72 bg-blue-200 dark:bg-blue-800 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-1000"></div>
+            <div className="absolute bottom-1/4 left-1/3 w-72 h-72 bg-purple-200 dark:bg-purple-800 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-500"></div>
+          </div>
         </div>
-    );
+
+        {/* Parallax Elements */}
+        <motion.div style={{ y }} className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-20 left-10 opacity-10">
+            <CloudIcon />
+          </div>
+          <div className="absolute top-32 right-20 opacity-10">
+            <SparklesIcon />
+          </div>
+          <div className="absolute bottom-40 left-20 opacity-10">
+            <RobotIcon />
+          </div>
+        </motion.div>
+
+        {/* Hero Content */}
+        <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            className="space-y-8"
+          >
+            <h1 className="text-5xl md:text-7xl font-black text-gray-900 dark:text-white">
+              <span className="bg-gradient-to-r from-primary-600 to-blue-600 bg-clip-text text-transparent">
+                Guardian
+              </span>
+              <br />
+              Clima
+            </h1>
+            
+            <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto font-medium">
+              Tu asistente inteligente para el clima con{' '}
+              <span className="text-primary-600 font-semibold">IA avanzada</span>{' '}
+              que te ayuda a vestirte perfecto para cualquier ocasión
+            </p>
+
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+              <motion.button
+                onClick={() => onNavigateToAuth('auth')}
+                className="btn-shimmer bg-gradient-to-r from-primary-600 to-primary-700 text-white px-8 py-4 rounded-xl text-lg font-semibold hover:from-primary-700 hover:to-primary-800 transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:scale-105"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                Comenzar Gratis
+              </motion.button>
+              
+              <motion.button
+                onClick={(e) => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
+                className="text-primary-600 dark:text-primary-400 px-8 py-4 rounded-xl text-lg font-semibold hover:bg-primary-50 dark:hover:bg-primary-950 transition-all duration-300"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                Descubrir Más
+              </motion.button>
+            </div>
+
+            {/* Stats */}
+            <motion.div 
+              className="grid grid-cols-1 md:grid-cols-3 gap-8 pt-16"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.4 }}
+            >
+              <div className="text-center">
+                <div className="text-3xl md:text-4xl font-bold text-primary-600">99%</div>
+                <div className="text-gray-600 dark:text-gray-400 mt-2">Precisión</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl md:text-4xl font-bold text-primary-600">10k+</div>
+                <div className="text-gray-600 dark:text-gray-400 mt-2">Usuarios Activos</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl md:text-4xl font-bold text-primary-600">50k+</div>
+                <div className="text-gray-600 dark:text-gray-400 mt-2">Consejos Dados</div>
+              </div>
+            </motion.div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section id="features" className="py-24 bg-white dark:bg-gray-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
+              Características Únicas
+            </h2>
+            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+              Descubre por qué miles de usuarios confían en GuardianClima para sus decisiones diarias
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {[
+              {
+                icon: <CloudIcon />,
+                title: 'Pronósticos Precisos',
+                description: 'Datos meteorológicos en tiempo real con predicciones exactas para tu ubicación específica.'
+              },
+              {
+                icon: <SparklesIcon />,
+                title: 'IA Avanzada',
+                description: 'Algoritmos inteligentes que aprenden de tus preferencias para recomendaciones personalizadas.'
+              },
+              {
+                icon: <RobotIcon />,
+                title: 'Consejos de Vestimenta',
+                description: 'Recomendaciones inteligentes basadas en el clima, ocasión y tu estilo personal.'
+              },
+              {
+                icon: <TravelIcon />,
+                title: 'Asistente de Viaje',
+                description: 'Planifica tus viajes con consejos sobre qué empacar según el destino y fechas.'
+              }
+            ].map((feature, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: index * 0.1 }}
+                viewport={{ once: true }}
+                className="group relative"
+              >
+                <div className="h-full p-8 bg-gradient-to-br from-white to-gray-50 dark:from-gray-700 dark:to-gray-800 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 border-2 border-transparent hover:border-primary-200 dark:hover:border-primary-700">
+                  <div className="mb-6 transform group-hover:scale-110 transition-transform duration-300">
+                    {feature.icon}
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+                    {feature.title}
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
+                    {feature.description}
+                  </p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Pricing Section */}
+      <section id="pricing" className="py-24 bg-gray-50 dark:bg-gray-900">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
+              Planes Simples y Transparentes
+            </h2>
+            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+              Elige el plan perfecto para tus necesidades. Cancela cuando quieras.
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-5xl mx-auto">
+            {plans.map((plan, index) => (
+              <motion.div
+                key={plan.id}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: index * 0.1 }}
+                viewport={{ once: true }}
+                className={`relative rounded-3xl p-8 ${
+                  plan.popular 
+                    ? 'bg-gradient-to-br from-primary-600 to-primary-700 text-white shadow-2xl transform scale-105' 
+                    : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-lg hover:shadow-xl'
+                } transition-all duration-300`}
+              >
+                {plan.popular && (
+                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                    <span className="bg-gradient-to-r from-yellow-400 to-orange-400 text-gray-900 px-6 py-2 rounded-full text-sm font-bold shadow-lg">
+                      Más Popular
+                    </span>
+                  </div>
+                )}
+
+                <div className="text-center mb-8">
+                  <h3 className="text-2xl font-bold mb-2">{plan.name}</h3>
+                  <p className={`text-sm ${plan.popular ? 'text-primary-100' : 'text-gray-600 dark:text-gray-400'}`}>
+                    {plan.description}
+                  </p>
+                  <div className="mt-6">
+                    <span className="text-5xl font-bold">{plan.price}</span>
+                    <span className={`text-lg ${plan.popular ? 'text-primary-100' : 'text-gray-600 dark:text-gray-400'}`}>
+                      {plan.period}
+                    </span>
+                  </div>
+                </div>
+
+                <ul className="space-y-4 mb-8">
+                  {plan.features.map((feature, featureIndex) => (
+                    <li key={featureIndex} className="flex items-start">
+                      <div className={`mr-3 mt-0.5 ${plan.popular ? 'text-primary-200' : 'text-primary-600'}`}>
+                        <CheckIcon />
+                      </div>
+                      <span className={`${plan.popular ? 'text-primary-50' : 'text-gray-600 dark:text-gray-300'}`}>
+                        {feature}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+
+                <button
+                  onClick={() => onNavigateToAuth('auth')}
+                  className={`w-full py-4 px-6 rounded-xl font-semibold transition-all duration-300 ${
+                    plan.popular
+                      ? 'bg-white text-primary-600 hover:bg-gray-50 shadow-lg hover:shadow-xl'
+                      : 'bg-gradient-to-r from-primary-600 to-primary-700 text-white hover:from-primary-700 hover:to-primary-800 shadow-md hover:shadow-lg'
+                  }`}
+                >
+                  {plan.buttonText}
+                </button>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Contact Section */}
+      <section id="contact" className="py-24 bg-white dark:bg-gray-800">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+          >
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6">
+              ¿Tienes Preguntas?
+            </h2>
+            <p className="text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto">
+              Estamos aquí para ayudarte. Contáctanos para cualquier consulta o sugerencia.
+            </p>
+            <motion.a
+              href="mailto:contacto@guardianclima.com"
+              className="inline-block bg-gradient-to-r from-primary-600 to-primary-700 text-white px-8 py-4 rounded-xl text-lg font-semibold hover:from-primary-700 hover:to-primary-800 transition-all duration-300 shadow-xl hover:shadow-2xl"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              Enviar un Email
+            </motion.a>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="bg-gray-900 text-gray-300 py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row justify-between items-center">
+            <div className="mb-4 md:mb-0">
+              <LogoIcon />
+            </div>
+            <div className="text-center md:text-right">
+              <p>&copy; {new Date().getFullYear()} GuardianClima. Todos los derechos reservados.</p>
+            </div>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
 }
 
 export default LandingPage;

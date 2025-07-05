@@ -503,6 +503,7 @@ def get_ai_travel_advice():
             f"Para cada prenda o artículo, sé específico (ej. '2 camisetas de algodón de manga corta', '1 par de zapatillas cómodas para caminar', '1 chaqueta impermeable ligera').\n"
             f"Añade una sección final con 2 o 3 consejos prácticos para el viaje basados en el clima y el destino.\n\n"
             f"El resultado debe ser una lista fácil de leer y accionable para el usuario.\n"
+            f"Aclaracion: La cantidad de prendas para el viaje debe depender de la fecha de inicio y final del viaje especificadas anteriormente"
             f"NO USES LETRAS NEGRITAS EN LAS RESPUESTAS, NO USES ASTERISCOS, NO USES HTML TAGS.\n"
         )
 
@@ -584,7 +585,7 @@ def create_paypal_order():
             "purchase_units": [{
                 "amount": {
                     "currency_code": "USD",
-                    "value": "5.00"
+                    "value": "9.99"
                 }
             }],
             "application_context": {

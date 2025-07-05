@@ -74,17 +74,20 @@ export const styles = {
     },
     
     // Enhanced MainView Header Styles
-    mainHeader: { 
+    mainHeader: (theme = 'light') => ({ 
         display: 'flex', 
         justifyContent: 'space-between', 
         alignItems: 'center', 
         marginBottom: '2rem',
         padding: '1.5rem 2rem',
-        backgroundColor: '#FFFFFF',
+        backgroundColor: theme === 'dark' ? '#151b26' : '#FFFFFF',
         borderRadius: '1.5rem',
-        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-        border: '1px solid #F1F5F9'
-    },
+        boxShadow: theme === 'dark' 
+            ? '0 8px 25px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.05)' 
+            : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+        border: theme === 'dark' ? 'none' : '1px solid #F1F5F9',
+        transition: 'all 0.3s ease'
+    }),
     header: { 
         margin: 0, 
         fontSize: '2.25rem', 
@@ -103,16 +106,19 @@ export const styles = {
     },
     
     // Enhanced Card Styles
-    card: { 
-        backgroundColor: '#FFFFFF', 
+    card: (theme = 'light') => ({ 
+        backgroundColor: theme === 'dark' ? '#151b26' : '#FFFFFF', 
         padding: '2rem', 
         borderRadius: '1.5rem', 
-        boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)', 
+        boxShadow: theme === 'dark' 
+            ? '0 12px 25px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.05)' 
+            : '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)', 
         marginBottom: '2rem', 
         width: '100%', 
         boxSizing: 'border-box',
-        border: '1px solid #F1F5F9',
-    },
+        border: theme === 'dark' ? 'none' : '2px solid #F1F5F9',
+        transition: 'all 0.3s ease',
+    }),
     
     // Enhanced Search Section
     searchSection: { 
@@ -123,25 +129,30 @@ export const styles = {
         justifyContent: 'center',
         marginBottom: '0.5rem',
     },
-    searchInput: { 
+    searchInput: (theme = 'light') => ({ 
         flex: 1, 
         padding: '1.2rem 1.5rem', 
         fontSize: '1.1rem', 
-        border: '2px solid #E2E8F0', 
+        border: theme === 'dark' ? 'none' : '2px solid #E2E8F0', 
         borderRadius: '1.2rem', 
         outline: 'none',
         transition: 'all 0.3s ease-in-out',
-        backgroundColor: '#F8FAFC',
-        boxShadow: '0 2px 8px rgba(59,130,246,0.06)',
+        backgroundColor: theme === 'dark' ? '#1e2631' : '#F8FAFC',
+        color: theme === 'dark' ? '#e2e8f0' : '#1E293B',
+        boxShadow: theme === 'dark' 
+            ? '0 4px 12px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1)' 
+            : '0 2px 8px rgba(59,130,246,0.06)',
         '&:focus': {
-            borderColor: '#3B82F6',
-            backgroundColor: '#FFFFFF',
-            boxShadow: '0 0 0 3px rgba(59, 130, 246, 0.1)'
+            borderColor: theme === 'dark' ? 'none' : '#3B82F6',
+            backgroundColor: theme === 'dark' ? '#242c3a' : '#FFFFFF',
+            boxShadow: theme === 'dark' 
+                ? '0 6px 20px rgba(0,0,0,0.4), 0 0 0 2px rgba(99, 102, 241, 0.4)' 
+                : '0 0 0 3px rgba(59, 130, 246, 0.1)'
         },
         '&::placeholder': {
-            color: '#94A3B8'
+            color: theme === 'dark' ? '#6b7280' : '#94A3B8'
         }
-    },
+    }),
     
     // Enhanced File Input
     fileInput: {
@@ -270,20 +281,23 @@ export const styles = {
     },
     
     // Enhanced AI Advice
-    aiAdvice: { 
+    aiAdvice: (theme = 'light') => ({ 
         marginTop: '2rem', 
-        backgroundColor: '#F0F9FF', 
+        backgroundColor: theme === 'dark' ? '#1e2631' : '#F0F9FF', 
         padding: '2rem', 
         borderRadius: '1.5rem', 
         display: 'flex', 
         flexDirection: 'column', 
         gap: '1.5rem', 
         alignItems: 'center', 
-        border: '2px solid #BFDBFE',
-        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
-    },
-    aiAdviceIconContainer: { 
-        backgroundColor: '#DBEAFE', 
+        border: theme === 'dark' ? '1px solid rgba(255, 255, 255, 0.1)' : '2px solid #BFDBFE',
+        boxShadow: theme === 'dark' 
+            ? '0 8px 25px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.05)' 
+            : '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+        transition: 'all 0.3s ease'
+    }),
+    aiAdviceIconContainer: (theme = 'light') => ({ 
+        backgroundColor: theme === 'dark' ? '#242c3a' : '#DBEAFE', 
         borderRadius: '50%', 
         padding: '1rem', 
         display: 'flex', 
@@ -292,21 +306,23 @@ export const styles = {
         flexShrink: 0,
         width: '60px',
         height: '60px',
-        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
-    },
-    aiAdviceTitle: { 
+        boxShadow: theme === 'dark' 
+            ? '0 6px 15px rgba(0, 0, 0, 0.3)' 
+            : '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+    }),
+    aiAdviceTitle: (theme = 'light') => ({ 
         margin: '0 0 1rem 0', 
         fontWeight: 700, 
-        color: '#1E40AF',
+        color: theme === 'dark' ? '#a5b4fc' : '#1E40AF',
         fontSize: '1.25rem'
-    },
-    aiAdviceText: { 
+    }),
+    aiAdviceText: (theme = 'light') => ({ 
         margin: 0, 
-        color: '#374151', 
+        color: theme === 'dark' ? '#e2e8f0' : '#374151', 
         lineHeight: '1.7',
         fontSize: '1rem',
         textAlign: 'center'
-    },
+    }),
     
     cardTitle: {
         margin: 0,
@@ -379,18 +395,18 @@ export const styles = {
         fontSize: '0.875rem',
         border: '1px solid #BFDBFE'
     },
-    historyCity: { 
+    historyCity: (theme = 'light') => ({ 
         fontWeight: 600, 
-        color: '#1E293B',
+        color: theme === 'dark' ? '#f1f5f9' : '#1E293B',
         fontSize: '1rem'
-    },
-    historyDesc: { 
+    }),
+    historyDesc: (theme = 'light') => ({ 
         margin: 0, 
-        color: '#64748B', 
+        color: theme === 'dark' ? '#cbd5e1' : '#64748B', 
         textTransform: 'capitalize', 
         fontSize: '0.875rem',
         fontWeight: 500
-    },
+    }),
     historyDate: { 
         color: '#94A3B8', 
         fontSize: '0.75rem', 
@@ -484,11 +500,7 @@ export const styles = {
         cursor: 'pointer', 
         transition: 'all 0.3s ease-in-out', 
         boxShadow: '0 10px 15px -3px rgba(59, 130, 246, 0.3), 0 4px 6px -2px rgba(59, 130, 246, 0.2)',
-        fontSize: '0.875rem',
-        '&:hover': {
-            transform: 'translateY(-2px)',
-            boxShadow: '0 20px 25px -5px rgba(59, 130, 246, 0.4), 0 10px 10px -5px rgba(59, 130, 246, 0.3)'
-        }
+        fontSize: '0.875rem'
     },
     
     // Enhanced Premium Card Title

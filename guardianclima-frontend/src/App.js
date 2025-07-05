@@ -1,11 +1,11 @@
-// App.js
+// App.js - Modernized with Theme Support
 
 import React, { useState, useEffect } from 'react';
 import { jwtDecode } from 'jwt-decode';
 
-// --- 1. IMPORTACIONES ---
-import { GlobalStyles } from './styles/GlobalStyles';
-import { styles } from './styles/professionalStyles';
+// --- 1. MODERN IMPORTS ---
+import { ThemeProvider } from './contexts/ThemeContext';
+import { AppLayout, LandingLayout } from './components/layout';
 import AuthView from './components/AuthView';
 import PersonalizationView from './components/PersonalizationView';
 import MainView from './components/MainView';
@@ -415,21 +415,19 @@ function App() {
     return content[view] || content.landing;
   };
 
-  const containerStyle = {
-    width: '100%',
-    margin: '0 auto',
-    padding: view === 'landing' ? '0' : '0 2rem',
-    maxWidth: view === 'landing' ? 'none' : '1200px',
-  };
-
   return (
-    <div style={styles.appWrapper}>
-      <GlobalStyles />
-      {view === 'landing' && <SharedNav onNavigateToAuth={handleSetView} />}
-      <div style={containerStyle}>
-        {renderContent()}
-      </div>
-    </div>
+    <ThemeProvider>
+      {view === 'landing' ? (
+        <LandingLayout currentView={view} user={user} isLoading={isLoading}>
+          <SharedNav onNavigateToAuth={handleSetView} />
+          {renderContent()}
+        </LandingLayout>
+      ) : (
+        <AppLayout currentView={view} user={user} isLoading={isLoading}>
+          {renderContent()}
+        </AppLayout>
+      )}
+    </ThemeProvider>
   );
 }
 
