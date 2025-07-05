@@ -42,12 +42,12 @@ npm test
 ## Architecture Overview
 
 ### Backend Structure
-- **app.py**: Main Flask application with all routes and business logic
+- **app.py**: Main Flask application with all routes and business logic (monolithic architecture)
 - **Database**: PostgreSQL with SQLAlchemy ORM
-- **Models**: Users, History, Personalization tables
+- **Models**: Users, OutfitHistory, Queries tables with comprehensive user preferences
 - **Authentication**: JWT-based with bcrypt password hashing
-- **External APIs**: OpenWeatherMap, Google Gemini, PayPal REST SDK
-- **Features**: Freemium usage tracking, weather data, AI clothing recommendations
+- **External APIs**: OpenWeatherMap, Google Gemini, PayPal REST SDK, MercadoPago
+- **Features**: Freemium usage tracking, weather data, AI clothing recommendations, personalization
 
 ### Frontend Structure
 - **React 19** with Create React App
@@ -84,9 +84,9 @@ REACT_APP_PAYPAL_CLIENT_ID=your_paypal_client_id
 
 ## Database Schema
 
-- **Users**: id, username, email, password, plan, usage_count, monthly_usage, last_reset
-- **History**: id, user_id, location, weather_data, outfit_recommendation, timestamp
-- **Personalization**: id, user_id, preferences (JSON), created_at, updated_at
+- **Users**: id, username, email, password, plan, ai_outfit_uses, ai_travel_uses, extensive personalization fields (style, activity, sensitivity, colors, climate preferences, etc.)
+- **OutfitHistory**: id, user_id, city, advice, date
+- **Queries**: id, user_id, ciudad, temperatura, descripcion, timestamp
 
 ## Development Notes
 
@@ -96,3 +96,5 @@ REACT_APP_PAYPAL_CLIENT_ID=your_paypal_client_id
 - Usage limits enforced for free plan (3 outfit recommendations, 2 travel assistant uses per month)
 - All API routes are CORS-enabled for localhost:3000
 - Images handled with Pillow for potential future features
+- Monolithic Flask backend - all business logic in single app.py file
+- Frontend uses React Testing Library for component testing

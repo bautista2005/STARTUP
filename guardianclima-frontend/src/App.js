@@ -99,7 +99,14 @@ function App() {
           body: JSON.stringify({ username, email, password }),
         });
         const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'Error en el registro.');
+        if (!res.ok) {
+          // Handle password validation errors specifically
+          if (data.password_errors) {
+            const passwordErrorText = data.password_errors.join('\n• ');
+            throw new Error(`${data.error}:\n• ${passwordErrorText}`);
+          }
+          throw new Error(data.error || 'Error en el registro.');
+        }
         alert(data.mensaje);
         await handleAuth('login');
       } else { // action === 'login'

@@ -38,7 +38,7 @@ const CheckIcon = () => (
 
 function PlanCard({ plan, popular, handleUpgrade, isCurrentUserPlan, onSelectPlan }) {
     const cardStyle = {
-        ...styles.card,
+        ...styles.card('light'),
         flex: 1,
         minWidth: '280px',
         textAlign: 'center',
@@ -46,7 +46,7 @@ function PlanCard({ plan, popular, handleUpgrade, isCurrentUserPlan, onSelectPla
         position: 'relative',
         display: 'flex',
         flexDirection: 'column',
-        background: popular ? 'linear-gradient(135deg, #f0f9ff 0%, #e0f2f7 100%)' : '#fff', // Subtle gradient for popular card
+        background: popular ? 'linear-gradient(135deg, #f0f9ff 0%, #e0f2f7 100%)' : '#fff',
     };
     
     const buttonStyle = popular && !isCurrentUserPlan ? "btn btn-primary" : "btn btn-secondary";

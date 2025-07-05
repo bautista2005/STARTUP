@@ -16,6 +16,18 @@ function WeatherCard({ clima, consejoIA, isAdviceLoading, handleConsejoIA }) {
         return 'text-red-500';
     };
 
+    // Get weather animation class based on weather icon
+    const getWeatherAnimationClass = (iconCode) => {
+        // OpenWeatherMap icon codes
+        if (iconCode.includes('01')) return 'weather-icon-sun'; // clear sky
+        if (iconCode.includes('02') || iconCode.includes('03') || iconCode.includes('04')) return 'weather-icon-cloud'; // clouds
+        if (iconCode.includes('09') || iconCode.includes('10')) return 'weather-icon-rain'; // rain
+        if (iconCode.includes('11')) return 'weather-icon-thunder'; // thunderstorm
+        if (iconCode.includes('13')) return 'weather-icon-snow'; // snow
+        if (iconCode.includes('50')) return 'weather-icon-mist'; // mist/fog
+        return 'weather-icon-cloud'; // default to cloud animation
+    };
+
     return (
         <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -50,7 +62,7 @@ function WeatherCard({ clima, consejoIA, isAdviceLoading, handleConsejoIA }) {
                     <motion.img 
                         src={`https://openweathermap.org/img/wn/${clima.weather[0].icon}@2x.png`} 
                         alt="weather icon"
-                        className="w-16 h-16 object-contain"
+                        className={`w-16 h-16 object-contain ${getWeatherAnimationClass(clima.weather[0].icon)}`}
                         whileHover={{ scale: 1.1, rotate: 5 }}
                         transition={{ duration: 0.2 }}
                     />
