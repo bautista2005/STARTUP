@@ -5,7 +5,7 @@ import PlanCard from './PlanCard';
 function PricingPage({ setView, handleUpgrade, currentUserPlan }) {
     const plans = [
         { id: 'free', name: 'Plan Gratuito', price: '$0', cta: 'Seleccionar' },
-        { id: 'premium', name: 'Plan Premium', price: '$5', originalPrice: '$10', cta: '¡Aprovecha la Oferta!' }
+        { id: 'premium', name: 'Plan Premium', price: '$9.99', originalPrice: '$20', cta: '¡Aprovecha la Oferta!' }
     ];
 
     return (

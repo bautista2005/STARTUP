@@ -2,6 +2,7 @@
 
 import React, { useRef, useEffect, useState } from 'react';
 import { styles } from '../styles/professionalStyles';
+import { useTheme } from '../hooks/useTheme';
 import PlanTag from './PlanTag';
 import WeatherCard from './WeatherCard';
 import HistoryList from './HistoryList';
@@ -57,6 +58,9 @@ function MainView(props) {
 
     // Set the backend API base URL
     const API_BASE_URL = 'http://localhost:5000';
+    
+    // Get theme context
+    const { theme } = useTheme();
 
     // --- NUEVO: Efecto para limpiar el input de archivo después de la carga ---
     useEffect(() => {
@@ -109,19 +113,19 @@ function MainView(props) {
         // Only show advice if a new one was generated in this session
         if (aiOutfitConsejo && submittedImages.length > 0 && lastOutfitCity) {
             return (
-                <div className="fade-in" style={{...styles.aiAdvice, marginTop: '2rem'}}>
-                    <div style={styles.aiAdviceIconContainer}>
+                <div className="fade-in" style={{...styles.aiAdvice(theme), marginTop: '2rem'}}>
+                    <div style={styles.aiAdviceIconContainer(theme)}>
                         <RobotIcon />
                     </div>
                     <div style={{ width: '100%', textAlign: 'center' }}>
-                        <h4 style={styles.aiAdviceTitle}>Tu Outfit por Guardián IA</h4>
+                        <h4 style={styles.aiAdviceTitle(theme)}>Tu Outfit por Guardián IA</h4>
                         <div style={styles.imageGallery}>
                             {submittedImages.map((image, index) => (
                                 <img key={index} src={image} alt={`prenda ${index + 1}`} style={styles.galleryImage} />
                             ))}
                         </div>
-                        <p style={{ ...styles.aiAdviceText, whiteSpace: 'pre-line' }}>{aiOutfitConsejo}</p>
-                        <div style={{ color: '#64748B', fontSize: '0.9em', marginTop: '0.5em' }}>
+                        <p style={{ ...styles.aiAdviceText(theme), whiteSpace: 'pre-line' }}>{aiOutfitConsejo}</p>
+                        <div style={{ color: theme === 'dark' ? '#94a3b8' : '#64748B', fontSize: '0.9em', marginTop: '0.5em' }}>
                             <span>Ciudad: {lastOutfitCity}</span> &nbsp;|&nbsp;
                             <span>{new Date().toLocaleString('es-ES')}</span>
                         </div>
@@ -131,7 +135,7 @@ function MainView(props) {
         }
         // Default message
         return (
-            <div style={{ color: '#64748B', textAlign: 'center', marginTop: '2rem' }}>
+            <div style={{ color: theme === 'dark' ? '#94a3b8' : '#64748B', textAlign: 'center', marginTop: '2rem' }}>
                 {'Genera un nuevo consejo de vestimenta para verlo aquí.'}
             </div>
         );
@@ -155,9 +159,11 @@ function MainView(props) {
     }, []);
 
     return (
-        <div className="fade-in" style={{ minHeight: '100vh', backgroundColor: '#F8FAFC' }}>
+        <div className="fade-in" style={{ 
+            minHeight: '100vh'
+        }}>
             {/* Enhanced Header */}
-            <header style={styles.mainHeader}>
+            <header style={styles.mainHeader(theme)}>
                 <div>
                     <h1 style={styles.header}>Hola, {user?.username}</h1>
                     <p style={styles.subtitle}>Tu pronóstico personalizado</p>
@@ -172,7 +178,7 @@ function MainView(props) {
                     <PlanTag plan={user?.plan} />
 
                     {/* Botón para gestionar el plan y acceder a la página de precios  */}
-                    <button onClick={() => setView('pricing')} style={styles.upgradeButton}>
+                    <button onClick={() => setView('pricing')} className="upgrade-btn" style={styles.upgradeButton}>
                         <StarIcon />
                         Gestionar Plan
                     </button>
@@ -198,7 +204,7 @@ function MainView(props) {
                     {/* Main Content Area */}
                     <div style={styles.mainContentArea}>
                         {/* Search Card */}
-                        <div className="card-hover-gradient" style={styles.card}>
+                        <div className="card-hover-gradient" style={styles.card(theme)}>
                             <div style={styles.searchCardCentered}>
                                 <h3 style={styles.cardTitle}>Buscar Clima</h3>
                                 <div className="search-section" style={styles.searchSection}>
@@ -207,7 +213,7 @@ function MainView(props) {
                                         value={ciudad}
                                         onChange={(e) => setCiudad(e.target.value)}
                                         placeholder="Busca una ciudad..."
-                                        style={styles.searchInput}
+                                        style={styles.searchInput(theme)}
                                     />
                                     <button
                                         onClick={handleBuscarClima}
@@ -223,28 +229,21 @@ function MainView(props) {
                                             background: 'linear-gradient(90deg, #2563EB 0%, #3B82F6 100%)',
                                             border: 'none',
                                             transition: 'background 0.2s, box-shadow 0.2s',
+                                            color: "white",
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center'
                                         }}
                                         // Deshabilita los botones si alguna de las operaciones de IA está en curso
                                         disabled={isLoading || isAdviceLoading || isAiOutfitLoading}
                                     >
-                                        {isLoading ? 'Buscando...' : 'Buscar'}
+                                        {isLoading ? <Spinner /> : 'Buscar'}
                                     </button>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Mensajes de carga y error para la búsqueda de clima */}
-                        {isLoading && !clima && (
-                            <div style={{
-                                textAlign: 'center', 
-                                marginTop: '2rem', 
-                                color: '#64748B',
-                                fontSize: '1.125rem',
-                                fontWeight: 500
-                            }}>
-                                🔍 Buscando clima...
-                            </div>
-                        )}
+                        {/* Mensajes de error para la búsqueda de clima */}
                         {error && !clima && <p style={styles.error}>{error}</p>}
 
                         {/* Muestra la tarjeta del clima si hay datos  */}
@@ -256,7 +255,7 @@ function MainView(props) {
                         />}
 
                         {/* --- NUEVA SECCIÓN: CONSEJO DE VESTIMENTA CON IMÁGENES (PREMIUM/PRO) --- */}
-                        <div className="card-hover-gradient" style={styles.card}>
+                        <div className="card-hover-gradient" style={styles.card(theme)}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75em', marginBottom: '0.5em' }}>
                                 <h3 style={styles.premiumCardTitle}>
                                     Consejo de Vestimenta con IA{isPremium ? ' Premium' : ''}
@@ -312,7 +311,7 @@ function MainView(props) {
                                     value={outfitCity}
                                     onChange={(e) => setOutfitCity(e.target.value)}
                                     placeholder="Elige una ciudad para el consejo..."
-                                    style={{...styles.searchInput, width: '100%', boxSizing: 'border-box'}}
+                                    style={{...styles.searchInput(theme), width: '100%', boxSizing: 'border-box'}}
                                     disabled={isAiOutfitLoading || (isFree && user.ai_outfit_uses >= 3)}
                                 />
                             </div>
@@ -336,18 +335,32 @@ function MainView(props) {
                                         justifyContent: 'center',
                                         gap: '0.75em',
                                         padding: '1.25em 2em',
-                                        border: '2px dashed #3B82F6',
+                                        border: theme === 'dark' ? '2px dashed #6366f1' : '2px dashed #3B82F6',
                                         borderRadius: '1rem',
-                                        background: '#F1F5FE',
-                                        color: '#2563EB',
+                                        background: theme === 'dark' ? '#1e2631' : '#F1F5FE',
+                                        color: theme === 'dark' ? '#a5b4fc' : '#2563EB',
                                         fontWeight: 600,
                                         fontSize: '1.1em',
                                         cursor: isAiOutfitLoading || (isFree && user.ai_outfit_uses >= 3) ? 'not-allowed' : 'pointer',
                                         transition: 'background 0.2s, border 0.2s',
                                         marginBottom: '0.5em'
                                     }}
-                                    onMouseOver={e => e.currentTarget.style.background = '#E0E7FF'}
-                                    onMouseOut={e => e.currentTarget.style.background = '#F1F5FE'}
+                                    onMouseOver={e => {
+                                        if (theme === 'dark') {
+                                            e.currentTarget.style.background = '#242c3a';
+                                            e.currentTarget.style.borderColor = '#818cf8';
+                                        } else {
+                                            e.currentTarget.style.background = '#E0E7FF';
+                                        }
+                                    }}
+                                    onMouseOut={e => {
+                                        if (theme === 'dark') {
+                                            e.currentTarget.style.background = '#1e2631';
+                                            e.currentTarget.style.borderColor = '#6366f1';
+                                        } else {
+                                            e.currentTarget.style.background = '#F1F5FE';
+                                        }
+                                    }}
                                 >
                                     <span role="img" aria-label="upload">📁</span>
                                     {selectedFiles && selectedFiles.length > 0
@@ -375,32 +388,29 @@ function MainView(props) {
                             {showAdvice()}
 
                             {isFree && user.ai_outfit_uses >= 3 && (
-                                <button onClick={() => setView('pricing')} style={{...styles.upgradeButton, marginTop: '1.5rem', width: '100%'}}>
+                                <button onClick={() => setView('pricing')} className="upgrade-btn" style={{...styles.upgradeButton, marginTop: '1.5rem', width: '100%'}}>
                                     <StarIcon /> Ver Planes Premium
                                 </button>
                             )}
                         </div>
                         {/* --- FIN NUEVA SECCIÓN --- */}
 
-                        {/* --- NUEVA SECCIÓN: ASISTENTE DE VIAJE (PREMIUM/PRO) --- */}
-                        <div className="card-hover-gradient" style={styles.card}>
-                            {user.plan === 'premium' && (
-                                <TravelAssistant 
-                                    user={user}
-                                    handleGenerateTravelAdvice={handleGenerateTravelAdvice}
-                                    isTravelLoading={isTravelLoading}
-                                    travelAdvice={travelAdvice}
-                                    travelError={travelError}
-                                    setView={setView}
-                                />
-                            )}
-                        </div>
+                        {/* --- NUEVA SECCIÓN: ASISTENTE DE VIAJE --- */}
+                        <TravelAssistant 
+                            user={user}
+                            handleGenerateTravelAdvice={handleGenerateTravelAdvice}
+                            isTravelLoading={isTravelLoading}
+                            travelAdvice={travelAdvice}
+                            travelError={travelError}
+                            setView={setView}
+                            theme={theme}
+                        />
                         {/* --- FIN NUEVA SECCIÓN --- */}
                     </div>
 
                     {/* Historial de Outfits Sidebar */}
                     <div className="history-sidebar card-hover-gradient" style={{ 
-                        ...styles.card, 
+                        ...styles.card(theme), 
                         ...styles.historyCard, 
                         width: '100%', 
                         opacity: '1',
@@ -411,7 +421,7 @@ function MainView(props) {
                         <h3 style={{...styles.cardTitle, textAlign: 'center'}}>Historial de Outfits</h3>
                         <ul style={styles.historyList}>
                             {outfitHistory.length === 0 && (
-                                <li style={{ color: '#64748B', textAlign: 'center', padding: '1.5rem 0' }}>No hay outfits generados aún.</li>
+                                <li style={{ color: theme === 'dark' ? '#94a3b8' : '#64748B', textAlign: 'center', padding: '1.5rem 0' }}>No hay outfits generados aún.</li>
                             )}
                             {outfitHistory.map((item, index) => (
                                 <li
@@ -419,8 +429,8 @@ function MainView(props) {
                                 onClick={() => handleOpenModal(item)}
                                 >
                                     <div>
-                                        <strong style={styles.historyCity}>{item.city}</strong>
-                                        <p style={styles.historyDesc}>{new Date(item.date).toLocaleDateString('es-ES')}</p>
+                                        <strong style={styles.historyCity(theme)}>{item.city}</strong>
+                                        <p style={styles.historyDesc(theme)}>{new Date(item.date).toLocaleDateString('es-ES')}</p>
                                     </div>
                                 </li>
                             ))}

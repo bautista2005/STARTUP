@@ -9,7 +9,7 @@ const spinnerStyle = {
     height: '20px',
     animation: 'spin 1s linear infinite',
     display: 'inline-block',
-    marginRight: '10px',
+    margin: '0',
 };
 
 const keyframes = `

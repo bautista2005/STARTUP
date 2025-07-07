@@ -22,7 +22,7 @@ function AuthView({ handleAuth, isLoading, error, username, setUsername, email, 
       <h2 style={styles.authTitle}>{isRegister ? 'Crear Nueva Cuenta' : 'Iniciar Sesión'}</h2>
       <p style={styles.authSubtitle}>Tu compañero meteorológico inteligente</p>
       
-      <div key={isRegister ? 'register' : 'login'} className="fade-in" style={{width: '100%', display: 'flex', flexDirection: 'column', gap: '1rem'}}>
+      <div key={isRegister ? 'register' : 'login'} className="fade-in" style={{width: '100%', display: 'flex', flexDirection: 'column', gap: '0.75rem'}}>
         {isRegister && (
           <div style={styles.inputGroup}>
             <span style={styles.inputIcon}><UserIcon /></span>
@@ -41,9 +41,24 @@ function AuthView({ handleAuth, isLoading, error, username, setUsername, email, 
         </div>
       </div>
 
-      {error && <p style={styles.error}>{error}</p>}
+      {error && <p style={{...styles.error, whiteSpace: 'pre-line'}}>{error}</p>}
       
-      <button onClick={() => handleAuth(isRegister ? 'register' : 'login')} disabled={isLoading} style={styles.primaryButton}>
+      <button 
+        onClick={() => handleAuth(isRegister ? 'register' : 'login')} 
+        disabled={isLoading} 
+        className="btn-primary"
+        style={styles.primaryButton}
+        onMouseEnter={(e) => {
+          if (!isLoading) {
+            e.target.style.transform = 'translateY(-3px)';
+            e.target.style.boxShadow = '0 10px 15px -3px rgba(59, 130, 246, 0.4), 0 4px 6px -2px rgba(59, 130, 246, 0.3)';
+          }
+        }}
+        onMouseLeave={(e) => {
+          e.target.style.transform = 'translateY(0)';
+          e.target.style.boxShadow = '0 4px 6px rgba(59, 130, 246, 0.2)';
+        }}
+      >
           {isLoading ? (isRegister ? 'Registrando...' : 'Cargando...') : (isRegister ? 'Crear Cuenta' : 'Iniciar Sesión')}
       </button>
 

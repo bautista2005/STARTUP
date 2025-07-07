@@ -16,6 +16,7 @@ import os
 from dotenv import load_dotenv
 import json
 import paypalrestsdk
+import re
 
 load_dotenv(override=True)
 
@@ -108,6 +109,53 @@ if geminiAPI:
     gemini_client = genai.Client(api_key=geminiAPI)
 
 # --- 6. Funciones de Ayuda ---
+def validate_password(password):
+    """
+    Valida que la contraseña cumpla con los requisitos de seguridad.
+    Retorna un diccionario con 'valid' (bool) y 'errors' (lista de errores).
+    """
+    errors = []
+    
+    # Mínimo 8 caracteres
+    if len(password) < 8:
+        errors.append("La contraseña debe tener al menos 8 caracteres")
+    
+    # Máximo 128 caracteres para evitar ataques de memoria
+    if len(password) > 128:
+        errors.append("La contraseña no puede exceder 128 caracteres")
+    
+    # Al menos una letra minúscula
+    if not re.search(r'[a-z]', password):
+        errors.append("La contraseña debe contener al menos una letra minúscula")
+    
+    # Al menos una letra mayúscula
+    if not re.search(r'[A-Z]', password):
+        errors.append("La contraseña debe contener al menos una letra mayúscula")
+    
+    # Al menos un número
+    if not re.search(r'[0-9]', password):
+        errors.append("La contraseña debe contener al menos un número")
+    
+    # No debe contener espacios
+    if ' ' in password:
+        errors.append("La contraseña no puede contener espacios")
+    
+    # Verificar patrones comunes débiles
+    common_patterns = [
+        r'123456', r'password', r'qwerty', r'abc123',
+        r'111111', r'000000', r'admin', r'user'
+    ]
+    
+    for pattern in common_patterns:
+        if re.search(pattern, password, re.IGNORECASE):
+            errors.append("La contraseña no puede contener patrones comunes o secuencias obvias")
+            break
+    
+    return {
+        'valid': len(errors) == 0,
+        'errors': errors
+    }
+
 def obtener_datos_clima_api(ciudad):
     base_url = "https://api.openweathermap.org/data/2.5/weather"
     parametros = {'q': ciudad, 'appid': MIowmAPI, 'units': 'metric', 'lang': 'es'}
@@ -125,6 +173,15 @@ def register():
     username, email, password = data.get('username'), data.get('email'), data.get('password')
     if not username or not email or not password:
         return jsonify({"error": "Nombre de usuario, email y contraseña requeridos"}), 400
+    
+    # Validar la contraseña
+    password_validation = validate_password(password)
+    if not password_validation['valid']:
+        return jsonify({
+            "error": "La contraseña no cumple con los requisitos de seguridad",
+            "password_errors": password_validation['errors']
+        }), 400
+    
     if Users.query.filter_by(email=email).first():
         return jsonify({"error": "El correo electrónico ya está en uso"}), 409
     if Users.query.filter_by(username=username).first():
@@ -503,6 +560,7 @@ def get_ai_travel_advice():
             f"Para cada prenda o artículo, sé específico (ej. '2 camisetas de algodón de manga corta', '1 par de zapatillas cómodas para caminar', '1 chaqueta impermeable ligera').\n"
             f"Añade una sección final con 2 o 3 consejos prácticos para el viaje basados en el clima y el destino.\n\n"
             f"El resultado debe ser una lista fácil de leer y accionable para el usuario.\n"
+            f"Aclaracion: La cantidad de prendas para el viaje debe depender de la fecha de inicio y final del viaje especificadas anteriormente"
             f"NO USES LETRAS NEGRITAS EN LAS RESPUESTAS, NO USES ASTERISCOS, NO USES HTML TAGS.\n"
         )
 
@@ -584,7 +642,7 @@ def create_paypal_order():
             "purchase_units": [{
                 "amount": {
                     "currency_code": "USD",
-                    "value": "5.00"
+                    "value": "9.99"
                 }
             }],
             "application_context": {

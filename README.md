@@ -222,7 +222,6 @@ STARTUP/
 ### Free Plan
 - Basic weather information
 - Limited AI outfit recommendations (3 uses per month)
-- Limited AI travel assistant (2 uses per month)
 
 ### Premium Plan
 - Unlimited AI outfit recommendations
